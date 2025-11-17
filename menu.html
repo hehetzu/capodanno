@@ -1,4 +1,4 @@
-<!-- Codice completo riscritto + aggiunta gestione dinamica antipasti, primi, secondi e dolci --><!DOCTYPE html><html lang="it">
+<!DOCTYPE html><html lang="it">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -51,7 +51,22 @@
         flex-direction: column;
         gap: 5px;
     }
-</style><script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script><script>
+</style><script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js">// --- SCRIPT DI PULIZIA FIREBASE (rimuove gli ID generati automaticamente) ---
+function pulisciFirebase() {
+    ['antipasti','primi','secondi','dolci'].forEach(cat => {
+        db.ref(cat).once('value').then(snap => {
+            snap.forEach(child => {
+                if (child.key.startsWith('-')) {
+                    db.ref(cat + '/' + child.key).remove();
+                }
+            });
+        });
+    });
+    alert('Database pulito! ID casuali rimossi.');
+}
+
+// Puoi richiamare pulisciFirebase() dalla console del browser
+</script><script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script><script>
     const firebaseConfig = {
       apiKey: "AIzaSyBUY-spueXuNmiUew_83Ww3BzP2_kQ0wT0",
       authDomain: "manu-dbc85.firebaseapp.com",
@@ -131,6 +146,16 @@
     <div id="menuSceltoText" style="font-size:20px;"></div>
 </div><script>
 function getNome(){ return localStorage.getItem('nome') || "Anonimo"; }
+
+// Se l'utente inserisce il nome "reset", viene avviata la pulizia totale del database
+if (getNome() === 'reset') {
+    db.ref('antipasti').remove();
+    db.ref('primi').remove();
+    db.ref('secondi').remove();
+    db.ref('dolci').remove();
+    db.ref('ordini').remove();
+    alert('Database completamente resettato!');
+}
 
 let ordine = { nome:getNome(), pizza:'', tipoPizza:'', pizzaGusto:'', antipasti:[], primo:'', secondo:'', dolce:'', fuochi:'' };
 
