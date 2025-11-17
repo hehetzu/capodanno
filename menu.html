@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+
+<!-- Background canvas: fireworks -->
+<canvas id="bgCanvas"></canvas>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ordina il tuo Menù di Capodanno!</title>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap');
+    html, body { height: 100vh; margin: 0; overflow: hidden; }
+
+    body {
+        font-family: 'Luckiest Guy', cursive;
+        background-color: #07183a; /* match index: deep navy cartoon */
+        background-image:
+            radial-gradient(circle at 10% 20%, rgba(255,209,102,0.95) 0px, rgba(255,209,102,0.0) 12px),
+            radial-gradient(circle at 80% 30%, rgba(255,107,107,0.95) 0px, rgba(255,107,107,0.0) 10px),
+            radial-gradient(circle at 50% 80%, rgba(77,208,225,0.95) 0px, rgba(77,208,225,0.0) 11px),
+            linear-gradient(180deg,#07183a 0%, #0b2545 50%, #081229 100%);
+        background-size: cover;
+        color: #fff9f3;
+        text-align: center;
+        padding: 30px;
+        margin: 0;
+    }
+    h1 { font-size: 3em; color: #ff3d00; text-shadow: 3px 3px #ffd600; margin-bottom: 40px; }
+    .section {
+        background: turquoise;
+        border-radius: 25px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+        transition: transform 0.3s;
+    }
+    /* Ensure each visible section fits in viewport (no page scroll) */
+    .section {
+        max-height: calc(100vh - 160px);
+        overflow: hidden;
+    }
+    /* Background canvas for fireworks (behind content) */
+    #bgCanvas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; display: block; }
+    /* Ensure main content is above the canvas */
+    h1, .section, #toast { position: relative; z-index: 2; }
+    .section:hover { transform: scale(1.02); }
+    .choice-button {
+        background: #ff1744;
+        color: #fff;
+        padding: 20px 40px;
+        margin: 15px;
+        border: none;
+        border-radius: 20px;
+        font-size: 24px;
+        cursor: pointer;
+        transition: transform 0.2s, background 0.2s;
+    }
+    .choice-button:hover { transform: scale(1.15); background: #ff9100; }
+    .hidden { display: none; }
+    .input-field { padding: 12px; font-size: 18px; width: 80%; margin-top: 15px; border-radius: 15px; border: 2px solid #ff3d00; text-align: center; }
+    label { font-size: 20px; display: block; margin-top: 10px; cursor: pointer; }
+    #riepilogoSection {
+        background: #f00797;
+        color: whitesmoke; 
+        text-shadow:1px 1px 0 black,-1px -1px 0 black,1px -1px 0 black,-1px 1px 0 black;
+        padding-bottom: 60px;
+    }
+    #menuSceltoText {
+        margin-top: 20px;
+        text-align: left;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    /* Animations and polished UI */
+    .section { opacity: 0; transform: translateY(12px); transition: opacity 420ms cubic-bezier(.2,.9,.2,1), transform 420ms cubic-bezier(.2,.9,.2,1); }
+    .section:not(.hidden) { opacity: 1; transform: none; }
+
+    .choice-button { transition: transform 160ms cubic-bezier(.2,.9,.2,1), box-shadow 160ms ease, background 160ms ease; }
+    .choice-button:hover { transform: translateY(-6px) scale(1.06) rotate(-1deg); box-shadow: 0 18px 30px rgba(0,0,0,0.18); }
+    .choice-button:active { transform: translateY(-2px) scale(0.98); }
+
+    .input-field { transition: box-shadow 180ms ease, transform 180ms ease; }
+    .input-field:focus { box-shadow: 0 14px 30px rgba(0,0,0,0.12); transform: translateY(-3px); outline: none; }
+
+    /* Toast styling and animations */
+    #toast { pointer-events: none; }
+    #toast .toast-item { pointer-events: auto; opacity: 0; transform: translateX(18px); margin-bottom: 10px; border-radius: 10px; padding: 12px 16px; color: #fff; font-size:14px; box-shadow: 0 10px 24px rgba(0,0,0,0.18); }
+    @keyframes toastIn { from { opacity:0; transform: translateX(18px); } to { opacity:1; transform:none; } }
+    @keyframes toastOut { from { opacity:1; transform:none; } to { opacity:0; transform: translateX(18px); } }
+
+    /* Canvas fireworks styling */
+    #fireworksCanvas { width: 100%; height: 280px; background: linear-gradient(180deg, rgba(0,0,0,0.02), rgba(0,0,0,0.06)); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+
+    /* Pulsante Sì pizza: permettere spostamento dinamico */
+    #siPizzaBtn { position: fixed; transition: left 300ms ease, top 300ms ease; z-index: 3; }
+</style>
+<!-- Firebase SDK compat -->
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+<script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBUY-spueXuNmiUew_83Ww3BzP2_kQ0wT0",
+      authDomain: "manu-dbc85.firebaseapp.com",
+      databaseURL: "https://manu-dbc85-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "manu-dbc85",
+      storageBucket: "manu-dbc85.firebasestorage.app",
+      messagingSenderId: "1081477129666",
+      appId: "1:1081477129666:web:e483d7ab2a26e5ed5ca25b",
+      measurementId: "G-E1MNRMW7M5"
+    };
+    firebase.initializeApp(firebaseConfig);
+    window.db = firebase.database();
+</script>
+</head>
+<body>
+
+<h1>🎉 Menù di Capodanno! 🎉 🎊🎆</h1>
+
+<!-- Notification container -->
+<div id="toast" style="position:fixed; right:18px; top:18px; z-index:9999; max-width:320px;"></div>
+
+<!-- Pizza -->
+<div class="section" id="pizzaSection">
+    <p style="font-size:24px;">Vuoi la pizza?</p>
+    <button class="choice-button" onclick="scegliPizza('yes')">Sì 🍕</button>
+    <button class="choice-button" onclick="scegliPizza('no')">No ❌</button>
+</div>
+
+<!-- (Sezione 'Piatti salvati' rimossa: ora si usa 'Altro' in-line nelle scelte) -->
+
+<!-- Pizza Casa/Fuori -->
+<div class="section hidden" id="pizzaTipoSection">
+    <p style="font-size:24px;">Fatta in casa o da fuori?</p>
+    <button class="choice-button" onclick="scegliTipoPizza('casa')">Casa 🍽️</button>
+    <button class="choice-button" onclick="scegliTipoPizza('fuori')">Fuori 🍴</button>
+</div>
+
+<!-- Pizza Gusti -->
+<div class="section hidden" id="pizzaGustoSection">
+    <p style="font-size:24px;">Scegli il gusto</p>
+    <button class="choice-button" onclick="scegliGustoPizza('Margherita')">Margherita 🍕</button>
+    <button class="choice-button" onclick="scegliGustoPizza('Quattro Stagioni')">4 Stagioni 🍕</button>
+    <button class="choice-button" onclick="scegliGustoPizza('Funghi')">Funghi 🍄</button>
+    <div>
+        <button class="choice-button" onclick="showAltInput('pizza')">Altro...</button>
+    </div>
+    <div id="pizzaAltInput" class="hidden" style="margin-top:12px;">
+        <input type="text" id="pizzaGustoAltro" class="input-field" placeholder="Inserisci nuovo gusto pizza...">
+        <button class="choice-button" onclick="addCustom('pizza')">Aggiungi</button>
+    </div>
+    <div id="pizzaExtra" style="margin-top:12px; text-align:center;"></div>
+</div>
+
+<!-- Antipasti -->
+<div class="section hidden" id="antipastiSection">
+    <p style="font-size:24px;">Scegli gli antipasti</p>
+    <label><input type="checkbox" class="antipasto" value="Cocktail Gamberi"> Cocktail Gamberi 🦐</label>
+    <label><input type="checkbox" class="antipasto" value="Tartine Salmone"> Tartine Salmone 🍣</label>
+    <label><input type="checkbox" class="antipasto" value="Vol-au-vent Fonduta"> Vol-au-vent Fonduta 🧀</label>
+    <div>
+        <button class="choice-button" onclick="showAltInput('antipasti')">Altro...</button>
+        <button class="choice-button" onclick="proseguiPrimo()">Avanti ➡️</button>
+    </div>
+    <div id="antipastiAltInput" class="hidden" style="margin-top:12px;">
+        <input type="text" id="antipastoAltro" class="input-field" placeholder="Inserisci nuovo antipasto...">
+        <button class="choice-button" onclick="addCustom('antipasti')">Aggiungi</button>
+    </div>
+    <div id="antipastiExtra" style="margin-top:12px; text-align:left; max-width:800px; margin-left:auto; margin-right:auto;"></div>
+</div>
+
+<!-- Primo -->
+<div class="section hidden" id="primoSection">
+    <p style="font-size:24px;">Scegli il primo</p>
+    <label><input type="radio" name="primo" value="Agnolotti Funghi"> Agnolotti ai funghi 🍄</label>
+    <label><input type="radio" name="primo" value="Tagliatelle Funghi"> Tagliatelle ai funghi 🍝</label>
+    <div>
+        <button class="choice-button" onclick="showAltInput('primi')">Altro...</button>
+        <button class="choice-button" onclick="proseguiSecondo()">Avanti ➡️</button>
+    </div>
+    <div id="primiAltInput" class="hidden" style="margin-top:12px;">
+        <input type="text" id="primoAltro" class="input-field" placeholder="Inserisci nuovo primo...">
+        <button class="choice-button" onclick="addCustom('primi')">Aggiungi</button>
+    </div>
+    <div id="primiExtra" style="margin-top:12px; text-align:left; max-width:800px; margin-left:auto; margin-right:auto;"></div>
+</div>
+
+<!-- Secondo -->
+<div class="section hidden" id="secondoSection">
+    <p style="font-size:24px;">Scegli il secondo</p>
+    <label><input type="radio" name="secondo" value="Cappello Prete Barolo"> Cappello del prete al Barolo 🍖</label>
+    <div>
+        <button class="choice-button" onclick="showAltInput('secondi')">Altro...</button>
+        <button class="choice-button" onclick="proseguiDolce()">Avanti ➡️</button>
+    </div>
+    <div id="secondiAltInput" class="hidden" style="margin-top:12px;">
+        <input type="text" id="secondoAltro" class="input-field" placeholder="Inserisci nuovo secondo...">
+        <button class="choice-button" onclick="addCustom('secondi')">Aggiungi</button>
+    </div>
+    <div id="secondiExtra" style="margin-top:12px; text-align:left; max-width:800px; margin-left:auto; margin-right:auto;"></div>
+</div>
+
+<!-- Dolce -->
+<div class="section hidden" id="dolceSection">
+    <p style="font-size:24px;">Scegli il dolce</p>
+    <label><input type="radio" name="dolce" value="Pandoro"> Pandoro 🎂</label>
+    <label><input type="radio" name="dolce" value="Tiramisù"> Tiramisù 🍮</label>
+    <div>
+        <button class="choice-button" onclick="showAltInput('dolci')">Altro...</button>
+        <button class="choice-button" onclick="proseguiFuochi()">Avanti ➡️</button>
+    </div>
+    <div id="dolciAltInput" class="hidden" style="margin-top:12px;">
+        <input type="text" id="dolceAltro" class="input-field" placeholder="Inserisci nuovo dolce...">
+        <button class="choice-button" onclick="addCustom('dolci')">Aggiungi</button>
+    </div>
+    <div id="dolciExtra" style="margin-top:12px; text-align:left; max-width:800px; margin-left:auto; margin-right:auto;"></div>
+</div>
+
+<!-- Fuochi (semplificato: solo Sì/No) -->
+<div class="section hidden" id="fuochiSection">
+    <p style="font-size:24px;">Vuoi i fuochi d'artificio? 🎆</p>
+    <button class="choice-button" onclick="scegliFuochi(true)">Sì 🎆</button>
+    <button class="choice-button" onclick="scegliFuochi(false)">No ❌</button>
+
+    <!-- Canvas per l'animazione dei fuochi (anteprima breve, si avvia solo se Sì) -->
+    <canvas id="fireworksCanvas" class="hidden" width="800" height="400" style="max-width:100%; height:auto; display:block; margin:14px auto; border-radius:12px;"></canvas>
+</div>
+
+<!-- Riepilogo -->
+<div class="section hidden" id="riepilogoSection">
+    <h2 style="font-size:28px;">Riepilogo Ordine</h2>
+    <p id="riepilogoText" style="font-size:20px;"></p>
+    <button class="choice-button" onclick="mostraMenuVotato()">📊 Vedi il menu più votato</button>
+</div>
+
+<!-- Menu più votato -->
+<div class="section hidden" id="menuVotatoSection">
+    <h2 style="font-size:28px;">Menu più votato 🎉</h2>
+    <div id="menuSceltoText" style="font-size:20px;"></div>
+</div>
+
+<script>
+function getNome() {
+    let nome = localStorage.getItem('nome') || "Anonimo";
+    if(nome.toLowerCase() === 'reset'){
+        resetDatabase();
+        localStorage.removeItem('nome');
+        return "Anonimo";
+    }
+    return nome;
+}
+
+let ordine = {nome: getNome(), pizza:'', tipoPizza:'', pizzaGusto:'', antipasti:[], primo:'', secondo:'', dolce:'', fuochi:''};
+
+function scegliPizza(scelta){
+    ordine.pizza = scelta;
+    document.getElementById('pizzaSection').classList.add('hidden');
+    if(scelta==='yes') document.getElementById('pizzaTipoSection').classList.remove('hidden');
+    else document.getElementById('antipastiSection').classList.remove('hidden');
+}
+
+function scegliTipoPizza(tipo){
+    ordine.tipoPizza = tipo;
+    document.getElementById('pizzaTipoSection').classList.add('hidden');
+    if(tipo==='casa') {
+        document.getElementById('pizzaGustoSection').classList.remove('hidden');
+    } else {
+        // Se l'utente sceglie pizza (anche 'fuori'), salta antipasti/primo/secondo
+        // e va direttamente a dolce
+        document.getElementById('dolceSection').classList.remove('hidden');
+    }
+}
+
+function scegliGustoPizza(gusto){
+    if(!gusto) return;
+    ordine.pizzaGusto = gusto;
+    document.getElementById('pizzaGustoSection').classList.add('hidden');
+    // Salta antipasti/primo/secondo: mostra direttamente la sezione dolce
+    document.getElementById('dolceSection').classList.remove('hidden');
+}
+
+function proseguiPrimo(){
+    let selezionati = Array.from(document.querySelectorAll('.antipasto:checked')).map(c=>c.value);
+    let altro = document.getElementById('antipastoAltro').value;
+    if(altro) selezionati.push(altro);
+    ordine.antipasti = selezionati;
+    if(altro) db.ref('antipasti/'+altro).set(1);
+    document.getElementById('antipastiSection').classList.add('hidden');
+    document.getElementById('primoSection').classList.remove('hidden');
+}
+
+function proseguiSecondo(){
+    let selezionato = document.querySelector('input[name="primo"]:checked');
+    let alt = document.getElementById('primoAltro').value;
+    ordine.primo = selezionato ? selezionato.value : alt;
+    if(alt) db.ref('primi/'+alt).set(1);
+    document.getElementById('primoSection').classList.add('hidden');
+    document.getElementById('secondoSection').classList.remove('hidden');
+}
+
+function proseguiDolce(){
+    let selezionato = document.querySelector('input[name="secondo"]:checked');
+    let alt = document.getElementById('secondoAltro').value;
+    ordine.secondo = selezionato ? selezionato.value : alt;
+    if(alt) db.ref('secondi/'+alt).set(1);
+    document.getElementById('secondoSection').classList.add('hidden');
+    document.getElementById('dolceSection').classList.remove('hidden');
+}
+
+function proseguiFuochi(){
+    let selezionato = document.querySelector('input[name="dolce"]:checked');
+    let alt = document.getElementById('dolceAltro').value;
+    ordine.dolce = selezionato ? selezionato.value : alt;
+    if(alt) db.ref('dolci/'+alt).set(1);
+    document.getElementById('dolceSection').classList.add('hidden');
+    document.getElementById('fuochiSection').classList.remove('hidden');
+}
+
+function scegliFuochi(yes){
+    const canvas = document.getElementById('fireworksCanvas');
+    if(yes){
+        ordine.fuochi = 'Sì';
+        if(canvas){
+            canvas.classList.remove('hidden');
+            // show a short, pleasant preview then continue
+            animateFireworks(canvas, 'Medio', 3800);
+        }
+        setTimeout(()=>{
+            if(canvas) canvas.classList.add('hidden');
+            document.getElementById('fuochiSection').classList.add('hidden');
+            document.getElementById('riepilogoSection').classList.remove('hidden');
+            mostraRiepilogo();
+            db.ref('ordini').push(ordine);
+            inviaTelegram();
+        }, 3800 + 300);
+        return;
+    }
+    // No -> procedi al riepilogo senza anteprima
+    ordine.fuochi = 'No';
+    document.getElementById('fuochiSection').classList.add('hidden');
+    document.getElementById('riepilogoSection').classList.remove('hidden');
+    mostraRiepilogo();
+    db.ref('ordini').push(ordine);
+    inviaTelegram();
+}
+
+// Semplice animazione canvas per fuochi d'artificio (leggera, senza librerie)
+function animateFireworks(canvas, tipo, duration){
+    const ctx = canvas.getContext('2d');
+    let w = canvas.width = canvas.clientWidth * (window.devicePixelRatio || 1);
+    let h = canvas.height = (canvas.clientHeight || 300) * (window.devicePixelRatio || 1);
+    ctx.clearRect(0,0,w,h);
+    const particles = [];
+    const now = Date.now();
+    const endAt = now + duration;
+    // spawn count based on tipo
+    let bursts = 0;
+    if(tipo==='Piccolo') bursts = 3;
+    else if(tipo==='Medio') bursts = 6;
+    else bursts = 10;
+    for(let b=0;b<bursts;b++){
+        const cx = (0.15 + Math.random()*0.7) * w;
+        const cy = (0.15 + Math.random()*0.5) * h;
+        const count = 12 + Math.floor(Math.random()*28);
+        for(let i=0;i<count;i++){
+            const angle = Math.random()*Math.PI*2;
+            const speed = 1 + Math.random()*4 + (tipo==='Grande'?2:0);
+            particles.push({ x:cx, y:cy, vx:Math.cos(angle)*speed, vy:Math.sin(angle)*speed, life: 800 + Math.random()*900, born: Date.now() + b*200, color: randColor() });
+        }
+    }
+    function loop(){
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.fillStyle = 'rgba(3,3,10,0.18)';
+        ctx.fillRect(0,0,w,h);
+        const t = Date.now();
+        for(let p of particles){
+            if(t < p.born) continue;
+            const age = t - p.born;
+            if(age > p.life) continue;
+            const k = 1 - age / p.life;
+            // simple physics
+            p.vy += 0.02; // gravity
+            p.x += p.vx * (window.devicePixelRatio || 1);
+            p.y += p.vy * (window.devicePixelRatio || 1);
+            ctx.globalCompositeOperation = 'lighter';
+            ctx.fillStyle = p.color;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, Math.max(1, 3 * k), 0, Math.PI*2);
+            ctx.fill();
+        }
+        if(Date.now() < endAt) requestAnimationFrame(loop);
+        else {
+            // fade out
+            let alpha = 1.0;
+            const fade = setInterval(()=>{
+                ctx.fillStyle = `rgba(3,3,10,${0.08})`;
+                ctx.fillRect(0,0,w,h);
+                alpha -= 0.08;
+                if(alpha <= 0){ clearInterval(fade); ctx.clearRect(0,0,w,h); }
+            }, 80);
+        }
+    }
+    loop();
+    function randColor(){
+        const cols = ['#ff4d4f','#ffd166','#4dd0e1','#7c4dff','#ff6f91','#ffe066','#8bc34a'];
+        return cols[Math.floor(Math.random()*cols.length)];
+    }
+}
+
+// Helper non invasivo per testare il flusso senza manipolare il DOM.
+// Uso: in console del browser chiamare `simulateFlow({pizza:'yes', tipo:'fuori', gusto:null})`
+// Restituisce l'array di sezioni che verrebbero mostrate in sequenza.
+function simulateFlow(choices){
+    // choices: { pizza: 'yes'|'no', tipo: 'casa'|'fuori'|null, gusto: string|null }
+    let seq = [];
+    if(choices.pizza === 'yes'){
+        seq.push('pizzaSection');
+        seq.push('pizzaTipoSection');
+        if(choices.tipo === 'casa'){
+            seq.push('pizzaGustoSection');
+            if(choices.gusto) seq.push('dolceSection');
+            else seq.push('pizzaGustoSection (waiting for gusto)');
+        } else {
+            // tipo 'fuori' o altro: salta direttamente a dolce
+            seq.push('dolceSection');
+        }
+    } else {
+        seq.push('pizzaSection');
+        seq.push('antipastiSection');
+        seq.push('primoSection');
+        seq.push('secondoSection');
+        seq.push('dolceSection');
+    }
+    // fuochi sempre dopo dolce
+    if(seq.indexOf('dolceSection') !== -1) seq.push('fuochiSection');
+    return seq;
+}
+
+function mostraRiepilogo(){
+    let testo = `Nome: ${ordine.nome}
+Pizza🍕: ${ordine.pizza==='yes'?ordine.tipoPizza==='casa'?ordine.pizzaGusto:'Pizza da fuori':'Nessuna pizza'}
+Antipasti🥗 : ${ordine.antipasti.join(', ') || 'Nessuno'}
+Primo🍝 : ${ordine.primo || 'Nessuno'}
+Secondo🍖 : ${ordine.secondo || 'Nessuno'}
+Dolce🍰 : ${ordine.dolce || 'Nessuno'}
+Fuochi🎆 : ${ordine.fuochi}`;
+    document.getElementById('riepilogoText').innerText = testo;
+}
+
+function mostraMenuVotato(){
+    document.getElementById('menuVotatoSection').classList.remove('hidden');
+    db.ref().once('value').then(snapshot => {
+        let menu = snapshot.val();
+        let testo = '';
+        ['antipasti','primi','secondi','dolci'].forEach(cat => {
+            if(menu[cat]){
+                let items = Object.entries(menu[cat]).map(([key,val]) => key);
+                testo += `${cat.charAt(0).toUpperCase()+cat.slice(1)}: ${items.join(', ')}\n`;
+            }
+        });
+        document.getElementById('menuSceltoText').innerText = testo || "Nessun menu ancora votato";
+    });
+}
+
+function inviaTelegram(){
+    const token = '8512557446:AAE6qdPgF8rsgc3G4aHTIEWNgjji64naDZc';
+    const chat_id = '147586543';
+    const text = encodeURIComponent(
+        `🎉  ${ordine.nome} 🎉\n`+
+        `Pizza🍕: ${ordine.pizza==='yes'?ordine.tipoPizza==='casa'?ordine.pizzaGusto:'Pizza da fuori':'Nessuna pizza'}\n`+
+        `Antipasti🥗: ${ordine.antipasti.join(', ') || 'Nessuno'}\n`+
+        `Primo🍝: ${ordine.primo || 'Nessuno'}\n`+
+        `Secondo🍖: ${ordine.secondo || 'Nessuno'}\n`+
+        `Dolce🍰: ${ordine.dolce || 'Nessuno'}\n`+
+        `Fuochi🎆: ${ordine.fuochi}`
+    );
+
+    fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chat_id}&text=${text}`)
+        .then(res => res.json())
+        .catch(err => console.error("Errore invio Telegram:", err));
+}
+
+function showToast(msg, type='info'){
+    const container = document.getElementById('toast');
+    if(!container) return;
+    const toast = document.createElement('div');
+    toast.className = 'toast-item';
+    const bgMap = {success:'#4caf50',error:'#f44336',warning:'#ff9800',info:'#2196f3'};
+    toast.style.background = bgMap[type] || '#2196f3';
+    toast.textContent = msg;
+    container.appendChild(toast);
+    // trigger entrance animation
+    toast.style.animation = 'toastIn 360ms cubic-bezier(.2,.9,.2,1) forwards';
+    // auto-dismiss with exit animation
+    setTimeout(()=>{
+        toast.style.animation = 'toastOut 300ms ease forwards';
+        setTimeout(()=>{ if(container.contains(toast)) container.removeChild(toast); }, 300);
+    }, 3000);
+}
+
+function resetDatabase(){
+    if(!confirm('Cancellare tutte le scelte personalizzate? Rimarranno solo le opzioni di default.')) return;
+    const categories = ['pizza','antipasti','primi','secondi','dolci'];
+    let count = 0;
+    categories.forEach(cat=>{
+        db.ref(cat).remove().then(()=>{ count++; if(count === categories.length) showToast('Database azzerato','success'); });
+    });
+}
+
+
+
+function sanitizeKey(name){ return name.replace(/[.#$\[\]\/]/g,'-'); }
+
+function showAltInput(cat){
+    const map = { pizza:'pizzaAltInput', antipasti:'antipastiAltInput', primi:'primiAltInput', secondi:'secondiAltInput', dolci:'dolciAltInput' };
+    const id = map[cat];
+    if(!id) return;
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.classList.remove('hidden');
+}
+
+function addCustom(cat){
+    let name = '';
+    if(cat==='pizza') name = document.getElementById('pizzaGustoAltro').value.trim();
+    else if(cat==='antipasti') name = document.getElementById('antipastoAltro').value.trim();
+    else if(cat==='primi') name = document.getElementById('primoAltro').value.trim();
+    else if(cat==='secondi') name = document.getElementById('secondoAltro').value.trim();
+    else if(cat==='dolci') name = document.getElementById('dolceAltro').value.trim();
+    if(!name){ showToast('Inserisci un nome valido','error'); return; }
+    const key = sanitizeKey(encodeURIComponent(name));
+    const node = cat;
+    function doWrite(){
+        return db.ref(node + '/' + key).once('value').then(snap=>{
+            if(snap.exists()){
+                showToast('Questa voce esiste già','warning');
+                addOptionToUI(cat, name);
+                return Promise.resolve('exists');
+            }
+            return db.ref(node + '/' + key).set(1).then(()=>{
+                showToast('Voce aggiunta con successo','success');
+                addOptionToUI(cat, name);
+            });
+        });
+    }
+    doWrite().catch(err=>{ console.error('Firebase write error', err); showToast('Errore durante il salvataggio sul server','error'); });
+}
+
+function addOptionToUI(cat, name){
+    if(!name) return;
+    if(cat === 'antipasti'){
+        const section = document.getElementById('antipastiSection');
+        // Controlla globalmente se esiste già (in tutta la sezione)
+        if(section && !Array.from(section.querySelectorAll('.antipasto')).some(i=>i.value===name)){
+            const label = document.createElement('label');
+            label.innerHTML = `<input type="checkbox" class="antipasto" value="${name}"> ${name}`;
+            let inserted = false;
+            for(let child of section.querySelectorAll('label')){
+                let existing = child.textContent.trim();
+                if(name.toLowerCase() < existing.toLowerCase()){ section.insertBefore(label, child); inserted = true; break; }
+            }
+            if(!inserted){
+                const altDiv = document.getElementById('antipastiAltInput');
+                if(altDiv) section.insertBefore(label, altDiv);
+                else section.appendChild(label);
+            }
+        }
+    } else if(cat === 'primi'){
+        const section = document.getElementById('primoSection');
+        if(section && !Array.from(section.querySelectorAll('input[name="primo"]')).some(i=>i.value===name)){
+            const label = document.createElement('label');
+            label.innerHTML = `<input type="radio" name="primo" value="${name}"> ${name}`;
+            let inserted = false;
+            for(let child of section.querySelectorAll('label')){
+                let existing = child.textContent.trim();
+                if(name.toLowerCase() < existing.toLowerCase()){ section.insertBefore(label, child); inserted = true; break; }
+            }
+            if(!inserted){
+                const altDiv = document.getElementById('primiAltInput');
+                if(altDiv) section.insertBefore(label, altDiv);
+                else section.appendChild(label);
+            }
+        }
+    } else if(cat === 'secondi'){
+        const section = document.getElementById('secondoSection');
+        if(section && !Array.from(section.querySelectorAll('input[name="secondo"]')).some(i=>i.value===name)){
+            const label = document.createElement('label');
+            label.innerHTML = `<input type="radio" name="secondo" value="${name}"> ${name}`;
+            let inserted = false;
+            for(let child of section.querySelectorAll('label')){
+                let existing = child.textContent.trim();
+                if(name.toLowerCase() < existing.toLowerCase()){ section.insertBefore(label, child); inserted = true; break; }
+            }
+            if(!inserted){
+                const altDiv = document.getElementById('secondiAltInput');
+                if(altDiv) section.insertBefore(label, altDiv);
+                else section.appendChild(label);
+            }
+        }
+    } else if(cat === 'dolci'){
+        const section = document.getElementById('dolceSection');
+        if(section && !Array.from(section.querySelectorAll('input[name="dolce"]')).some(i=>i.value===name)){
+            const label = document.createElement('label');
+            label.innerHTML = `<input type="radio" name="dolce" value="${name}"> ${name}`;
+            let inserted = false;
+            for(let child of section.querySelectorAll('label')){
+                let existing = child.textContent.trim();
+                if(name.toLowerCase() < existing.toLowerCase()){ section.insertBefore(label, child); inserted = true; break; }
+            }
+            if(!inserted){
+                const altDiv = document.getElementById('dolciAltInput');
+                if(altDiv) section.insertBefore(label, altDiv);
+                else section.appendChild(label);
+            }
+        }
+    } else if(cat === 'pizza'){
+        const section = document.getElementById('pizzaGustoSection');
+        if(section && !Array.from(section.querySelectorAll('button.choice-button')).some(b=>b.textContent.trim()===name)){
+            const btn = document.createElement('button');
+            btn.className = 'choice-button';
+            btn.textContent = name;
+            btn.onclick = function(){ scegliGustoPizza(name); };
+            let inserted = false;
+            for(let child of section.querySelectorAll('button.choice-button')){
+                let existing = child.textContent.trim();
+                if(name.toLowerCase() < existing.toLowerCase()){ section.insertBefore(btn, child); inserted = true; break; }
+            }
+            if(!inserted){
+                const altDiv = document.getElementById('pizzaAltInput');
+                if(altDiv) section.insertBefore(btn, altDiv);
+                else section.appendChild(btn);
+            }
+        }
+        ordine.pizza = 'yes'; ordine.tipoPizza = 'casa'; ordine.pizzaGusto = name;
+    }
+    const mapHide = { pizza:'pizzaAltInput', antipasti:'antipastiAltInput', primi:'primiAltInput', secondi:'secondiAltInput', dolci:'dolciAltInput' };
+    const hid = document.getElementById(mapHide[cat]); if(hid) hid.classList.add('hidden');
+    try{ if(cat==='pizza') document.getElementById('pizzaGustoAltro').value='';
+          if(cat==='antipasti') document.getElementById('antipastoAltro').value='';
+          if(cat==='primi') document.getElementById('primoAltro').value='';
+          if(cat==='secondi') document.getElementById('secondoAltro').value='';
+          if(cat==='dolci') document.getElementById('dolceAltro').value=''; }catch(e){}
+}
+
+function renderFirebaseOptions(cat, data){
+    // Carica tutte le opzioni da Firebase e le aggiunge (senza duplicati)
+    let items = data || {};
+    Object.keys(items).forEach((k)=>{
+        let name = decodeURIComponent(k);
+        addOptionToUI(cat, name);
+    });
+}
+
+function setupFirebaseListeners(){
+    if(!window.db || !db.ref) {
+        setTimeout(setupFirebaseListeners, 500);
+        return;
+    }
+    ['antipasti','primi','secondi','dolci','pizza'].forEach(cat=>{
+        // Leggi subito una volta (al caricamento)
+        db.ref(cat).once('value', snap => {
+            let val = snap.val() || {};
+            renderFirebaseOptions(cat, val);
+        });
+        // Poi registra listener realtime per aggiornamenti live
+        db.ref(cat).on('value', snap => {
+            let val = snap.val() || {};
+            renderFirebaseOptions(cat, val);
+        });
+    });
+}
+
+window.addEventListener('DOMContentLoaded', function(){ 
+    setupFirebaseListeners();
+});
+</script>
+<script src="https://cdn.jsdelivr.net/npm/fireworks-js@2.10.7/dist/index.umd.js"></script>
+<script>
+    const container = document.querySelector('body');
+    const fireworks = new Fireworks.default(container, {
+        autoresize: true,
+        opacity: 0.5,
+        acceleration: 1.05,
+        friction: 0.97,
+        gravity: 1.5,
+        particles: 50,
+        traceLength: 3,
+        traceSpeed: 10,
+        explosion: 5,
+        intensity: 30,
+        flickering: 50,
+        lineStyle: 'round',
+        hue: {
+            min: 0,
+            max: 360
+        },
+        delay: {
+            min: 30,
+            max: 60
+        },
+        rocketsPoint: {
+            min: 50,
+            max: 50
+        },
+        lineWidth: {
+            explosion: {
+                min: 1,
+                max: 3
+            },
+            trace: {
+                min: 1,
+                max: 2
+            }
+        },
+        brightness: {
+            min: 50,
+            max: 80
+        },
+        decay: {
+            min: 0.015,
+            max: 0.03
+        },
+        mouse: {
+            click: false,
+            move: false,
+            max: 1
+        }
+    });
+    fireworks.start();
+</script>
+</body>
+</html>
