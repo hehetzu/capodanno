@@ -138,7 +138,10 @@ function caricaLista(path, containerId, tipo){
     db.ref(path).once('value').then(snapshot => {
         let cont = document.getElementById(containerId);
         cont.innerHTML = '';
-        snapshot.forEach(child =>{
+        snapshot.forEach(child => {
+            let nome = child.key;
+            if (nome.startsWith('-')) return; // IGNORA ID CASUALI PUSH
+            let label = document.createElement('label');(child =>{
             let nome = child.key;
             let lbl = document.createElement('label');
             if(tipo==='checkbox') lbl.innerHTML = `<input type='checkbox' value='${nome}'> ${nome}`;
@@ -219,4 +222,4 @@ function mostraMenuVotato(){
     })
 }
 </script></body>
-</html
+</html>
