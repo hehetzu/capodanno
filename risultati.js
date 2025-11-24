@@ -17,10 +17,18 @@ const db = getDatabase(app);
 
 // --- FOTO UTENTE AUTOMATICA ---
 const getPhotoForUser = (name) => {
-    const clean = name.toLowerCase().replace(/\s+/g, '');
+    const lowerCaseName = name.toLowerCase().replace(/\s+/g, '');
+
+    // Mappa per gestire eccezioni nei nomi dei file (es. maiuscole)
+    const specialFileNames = {
+        'emanuele': 'Emanuele'
+    };
+
+    // Usa il nome speciale se esiste, altrimenti usa il nome in minuscolo
+    const fileName = specialFileNames[lowerCaseName] || lowerCaseName;
     return {
-        webp: `photos/${clean}.webp`,
-        png:  `photos/${clean}.png`,
+        webp: `photos/${fileName}.webp`,
+        png:  `photos/${fileName}.png`,
         fallback: `photos/default.webp`
     };
 };
@@ -156,7 +164,7 @@ const loadAndDisplayStatsSummary = async () => {
         let stats = snapshot.exists() ? snapshot.val() : {};
 
         if(!Object.keys(stats).length) {
-            statsContainer.innerHTML = `<h2>Menu più votato</h2><p>Nessun voto ancora registrato. Sii il primo a votare!</p>`;
+            statsContainer.innerHTML = `<h2>Riepilogo Community</h2><p>Nessun voto ancora registrato. Sii il primo a votare!</p>`;
             return;
         }
 
@@ -166,19 +174,29 @@ const loadAndDisplayStatsSummary = async () => {
             return sorted[0]? sorted[0][0]:"Nessun voto";
         };
 
+        const getTopMultiple = (field, limit = 3) => {
+            const counts = stats[field] || {};
+            const sorted = Object.entries(counts)
+                .sort(([, a], [, b]) => b - a)
+                .slice(0, limit)
+                .map(([name]) => name); // Prende solo il nome
+            
+            return sorted.length > 0 ? sorted.join(', ') : "Nessun voto";
+        };
+
         const winner = ((stats.main_choice?.pizza || 0) >= (stats.main_choice?.dolce || 0)) ? 'pizza' : 'dolce';
         let html = '';
         if(winner==='pizza'){
             html = `<h2>La community ha scelto... Pizza! 🍕</h2>
                     <ul>
-                    <li><strong>Tipo:</strong> ${getTop('pizza_location').replace('fatta_in_casa','Fatta in casa').replace('asporto','Da asporto')}</li>
+                    <li><strong>Tipo:</strong> ${getTop('pizza_location').replace(/_/g, ' ')}</li>
                     <li><strong>Gusto:</strong> ${getTop('pizza_flavor')}</li>
                     <li><strong>Dolce:</strong> ${getTop('dessert')}</li>
                     </ul>`;
         } else {
             html = `<h2>La community ha scelto... Menu Completo! 🍝</h2>
                     <ul>
-                    <li><strong>Antipasto:</strong> ${getTop('antipasto')}</li>
+                    <li><strong>Antipasti più scelti:</strong> ${getTopMultiple('antipasto', 3)}</li>
                     <li><strong>Primo:</strong> ${getTop('primo')}</li>
                     <li><strong>Secondo:</strong> ${getTop('secondo')}</li>
                     <li><strong>Dolce:</strong> ${getTop('dessert')}</li>
@@ -193,7 +211,12 @@ const loadAndDisplayStatsSummary = async () => {
 };
 
 // --- INIZIO ---
-document.addEventListener('DOMContentLoaded', () => {
+// Eseguiamo il codice direttamente dopo che lo script è stato caricato e tutte le funzioni sono definite.
+// Rimuoviamo l'evento DOMContentLoaded che si attivava troppo presto, prima che Firebase fosse pronto.
+try {
     loadAndDisplayStatsSummary();
     showVoterAvatars();
-});
+} catch (error) {
+    console.error("Errore nell'esecuzione principale di risultati.js:", error);
+    // Potresti mostrare un messaggio di errore all'utente qui, se necessario.
+}

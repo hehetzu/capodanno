@@ -258,25 +258,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Funzione per ottenere il percorso della foto in base al nome
     const getPhotoForUser = (name) => {
-        const lowerCaseName = name.toLowerCase();
-        // Mappa dei nomi (in minuscolo) ai file delle foto
-        // Corretto le estensioni in .png per coerenza con risultati.js
-        const photoMap = {
-            'emanuele': 'Emanuele.png',
-            'dama': 'Dama.png',
-            'giada': 'Giada.png',
-            'giulia': 'Giulia.png',
-            'luca': 'Luca.png',
-            'marta': 'Marta.png',
-            'matteo': 'Matteo.png',
-            'rocco': 'Rocco.png',
-            'saba': 'Saba.png',
-            'anna': 'Anna.png',
-            'annachiara': 'Anna.png',
-            'anna chiara': 'Anna.png'
+        const lowerCaseName = name.toLowerCase().replace(/\s+/g, '');
+
+        // Mappa per gestire eccezioni nei nomi dei file (es. maiuscole)
+        const specialFileNames = {
+            'emanuele': 'Emanuele'
         };
-        // Se il nome è nella mappa, restituisce il percorso, altrimenti usa la foto di default
-        return `photos/${photoMap[lowerCaseName] || 'Default.jpg'}`;
+
+        // Usa il nome speciale se esiste, altrimenti usa il nome in minuscolo
+        const fileName = specialFileNames[lowerCaseName] || lowerCaseName;
+        // Restituisce un oggetto con i percorsi possibili, per coerenza con risultati.js
+        return {
+            webp: `photos/${fileName}.webp`,
+            png: `photos/${fileName}.png`,
+            fallback: `photos/default.webp` // Usa un'immagine di default in formato webp
+        };
     };
 
     const showSummary = () => {
@@ -377,6 +373,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // document.getElementById('loading-spinner').style.display = 'block';
 
             const formData = new FormData(form);
+            // Usiamo un oggetto separato per i dati da salvare, per poterlo manipolare
             const orderData = Object.fromEntries(formData.entries());
 
             // Assicura che main_choice sia sempre valorizzato, anche se non fosse nel form
@@ -396,6 +393,23 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Se la pizza è da asporto, non c'è un gusto, quindi rimuoviamo la chiave
             if (orderData.pizza_location === 'asporto') {
                 delete orderData.pizza_flavor;
+            }
+
+            // --- LOGICA PER GESTIRE IL VOTO UNICO ---
+            // 1. Cerca se l'utente ha già votato
+            const ordersRef = ref(db, 'orders');
+            const snapshot = await get(ordersRef);
+            let existingOrderKey = null;
+            let oldOrderData = null;
+
+            if (snapshot.exists()) {
+                for (const key in snapshot.val()) {
+                    if (snapshot.val()[key].userName === userName) {
+                        existingOrderKey = key;
+                        oldOrderData = snapshot.val()[key];
+                        break;
+                    }
+                }
             }
 
             // Unisci le scelte condizionali per il riepilogo della notifica
@@ -806,11 +820,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 newButton.dataset.choice = newItemText;
                 newButton.textContent = newItemText;
 
-                // Legge il passo successivo dal contenitore e lo assegna al nuovo pulsante
-                let nextStep = listContainer.dataset.nextStepForNewOptions;
+                // Imposta il passo successivo di default
+                let nextStep = listContainer.dataset.nextStepForNewOptions || null;
                 const newItemLower = newItemText.toLowerCase();
 
                 // Logica per rendere i nuovi piatti "intelligenti" come quelli di default
+                // Questa logica ora si applica anche ai piatti aggiunti manualmente.
                 // Aggiunto 'pizza_flavor' per future espansioni
                 if (category === 'pizza_flavor' && newItemLower.includes('parmigiana')) {
                     // Esempio per il futuro: nextStep = 'parmigiana-options';
