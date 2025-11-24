@@ -30,38 +30,16 @@ body {
 }
 
 #manoGif {
-  max-width: 200px; /* ridotto per mobile */
+  max-width: 200px; 
   display: block;
 }
 
-/* CARTELLI FLOTANTI */
-.ban, .warn {
+/* EMOJI FLOTANTI */
+.emoji {
   position: absolute;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: transform 1s ease-in-out; /* più lento */
-}
-
-.ban {
-  width: 40px; height: 40px; /* più piccolo */
-  border: 4px solid red; border-radius: 50%;
-  background-color: white;
-}
-
-.ban::after {
-  content: "";
-  width: 4px; height: 140%;
-  background-color: red;
-  transform: rotate(45deg);
-  display: block;
-}
-
-.warn {
-  width: 40px; height: 40px; /* più piccolo */
-  background-color: yellow;
-  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-  font-weight: bold; color: black; font-size: 20px; /* ridotto */
+  font-size: 2em;
+  transition: transform 1.5s ease-in-out;
+  pointer-events: none;
 }
 
 /* TESTO LAMPEGGIANTE */
@@ -70,14 +48,14 @@ body {
   top: 0;
   left: 0;
   width: 100vw;
-  font-size: 3em; /* ridotto per mobile */
+  font-size: 3em;
   font-weight: bold;
   text-align: center;
   margin: 0;
   padding: 10px 0;
   z-index: 9999;
   pointer-events: none;
-  animation: lampeggia 2s infinite; /* più lento */
+  animation: lampeggia 2s infinite;
   color: #0074D9;
   text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000;
 }
@@ -90,7 +68,7 @@ body {
   top: 20%;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 20px; /* leggermente più piccolo */
+  font-size: 20px;
   text-align: center;
   z-index: 3;
   opacity: 0;
@@ -132,32 +110,32 @@ body {
 <div class="lampeggia">Non ti vogliamo</div>
 
 <script>
-/* CREAZIONE CARTELLI */
-function createSigns(count, type) {
+/* CREAZIONE EMOJI */
+const emojiList = ['🚫','⚠️']; // 🚫 = ban, ⚠️ = warn
+
+function createEmojis(count){
   for(let i=0;i<count;i++){
-    const div = document.createElement('div');
-    div.className = type;
-    div.style.top = Math.random()*85 + "%";
-    div.style.left = Math.random()*85 + "%";
-    if(type==='warn') div.textContent='!';
-    document.body.appendChild(div);
+    const span = document.createElement('span');
+    span.className='emoji';
+    span.textContent = emojiList[Math.floor(Math.random()*emojiList.length)];
+    span.style.top = Math.random()*85 + "%";
+    span.style.left = Math.random()*85 + "%";
+    document.body.appendChild(span);
   }
 }
 
-// Ridotto il numero per mobile
-createSigns(10,'ban');
-createSigns(10,'warn');
+createEmojis(20);
 
-/* MOVIMENTO CARTELLI */
-function animateSigns(){
-  const signs = document.querySelectorAll('.ban, .warn');
-  signs.forEach(el=>{
-    const dx = (Math.random()*2-1)*15; // spostamento più piccolo
+/* MOVIMENTO EMOJI */
+function animateEmojis(){
+  const emojis = document.querySelectorAll('.emoji');
+  emojis.forEach(el=>{
+    const dx = (Math.random()*2-1)*15;
     const dy = (Math.random()*2-1)*15;
-    el.style.transform = `translate(${dx}px, ${dy}px) rotate(${Math.random()*20-10}deg)`; // rotazione minore
+    el.style.transform = `translate(${dx}px, ${dy}px) rotate(${Math.random()*20-10}deg)`;
   });
 }
-setInterval(animateSigns, 1500); // più lento per mobile
+setInterval(animateEmojis, 1500);
 
 /* PULSANTE CHE SCAPPA */
 const btn = document.getElementById('prankBtn');
@@ -178,7 +156,7 @@ function showMessage(text){
   setTimeout(()=>{ message.style.opacity = 0; },1000);
 }
 
-// Mostra il pulsante dopo 5s (più rapido)
+// Mostra il pulsante dopo 5s
 setTimeout(()=>{
   btn.style.display='inline-block';
   moveButtonRandomly();
