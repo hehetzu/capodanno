@@ -23,15 +23,31 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: rgba(255,255,255,0.2);
-  padding: 10px;
-  border-radius: 20px;
+  /* Rimosso lo sfondo e applicato il blend-mode qui per fonderlo con lo sfondo della pagina */
+  background-color: transparent;
   z-index: 2;
+  /*
+    TRUCCO PER MANTENERE I COLORI:
+    1. Invertiamo i colori del contenitore (il bianco diventa nero, il giallo diventa blu).
+    2. Usiamo 'screen' che rende il nero trasparente.
+    3. Il risultato è che la mano blu si fonde con lo sfondo, ma l'inversione generale
+       ripristina i colori originali, mantenendo il giallo!
+  */
+  filter: invert(1);
+  mix-blend-mode: screen;
+}
+/* Modificato per usare un video, più performante di una GIF */
+#manoVideo {
+  width: 100%;
+  max-width: 220px; /* Leggermente più grande per un effetto migliore */
+  display: block;
 }
 
-#manoGif {
-  max-width: 200px; 
-  display: block;
+/* Ingrandisce la mano solo su schermi grandi (PC) */
+@media (min-width: 768px) {
+  #manoVideo {
+    max-width: 380px; /* Dimensione aumentata per PC */
+  }
 }
 
 /* EMOJI FLOTANTI */
@@ -102,7 +118,8 @@ body {
 <body>
 
 <div id="manoGifContainer">
-  <img id="manoGif" src="mano-no.gif" alt="Mano che dice NO">
+  <!-- Sostituito img con video per performance migliori su mobile -->
+  <video id="manoVideo" src="mano-no.mp4" autoplay loop muted playsinline alt="Mano che dice NO"></video>
 </div>
 
 <div id="message"></div>
@@ -115,7 +132,7 @@ const emojiList = ['🚫','⚠️'];
 
 // Determina il numero di emoji in base al dispositivo
 const isMobile = window.innerWidth < 600;
-const emojiCount = isMobile ? 10 : 40; // poche su mobile, tante su PC
+const emojiCount = isMobile ? 8 : 40; // Ridotte su mobile per migliorare le performance
 
 /* CREAZIONE EMOJI */
 function createEmojis(count){
@@ -140,7 +157,7 @@ function animateEmojis(){
     el.style.transform = `translate(${dx}px, ${dy}px) rotate(${Math.random()*20-10}deg)`;
   });
 }
-setInterval(animateEmojis, 1500);
+setInterval(animateEmojis, 2000); // Rallentato l'intervallo per alleggerire il carico
 
 /* PULSANTE CHE SCAPPA */
 const btn = document.getElementById('prankBtn');
