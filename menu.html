@@ -8,6 +8,76 @@
     <!-- Inclusione della libreria Chart.js per i grafici -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Stili per la responsività su dispositivi mobili */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px; /* Aggiunge un po' di spazio ai lati */
+            }
+
+            h1 {
+                font-size: 2em; /* Riduce la dimensione del titolo principale */
+                margin-bottom: 15px !important;
+            }
+
+            fieldset {
+                padding: 15px; /* Riduce il padding interno dei fieldset */
+            }
+
+            legend {
+                font-size: 1.5em; /* Riduce la dimensione delle legende */
+            }
+
+            .choice-button-container {
+                flex-direction: column; /* Impila i pulsanti verticalmente */
+                gap: 10px; /* Aggiunge spazio tra i pulsanti impilati */
+            }
+
+            .choice-btn, .nav-btn {
+                font-size: 1em; /* Normalizza la dimensione del font dei pulsanti */
+                padding: 12px 15px; /* Adegua il padding per schermi più piccoli */
+                width: 100%; /* Fa in modo che i pulsanti occupino tutta la larghezza */
+                box-sizing: border-box; /* Assicura che padding e border siano inclusi nella larghezza totale */
+            }
+
+            .add-item-form {
+                flex-direction: column; /* Impila l'input e il pulsante per aggiungere opzioni */
+                align-items: stretch;
+                gap: 10px;
+            }
+
+            .new-item-input {
+                width: 100%; /* Occupa tutta la larghezza disponibile */
+                box-sizing: border-box; /* Aggiunto per coerenza con i pulsanti */
+            }
+
+            #admin-reset-btn {
+                top: 10px !important;
+                right: 10px !important;
+            }
+
+            /* Stili per le immagini all'interno dei pulsanti di scelta */
+            .choice-btn img {
+                width: 80%; /* Usa una larghezza relativa */
+                max-width: 100px; /* Mantiene una dimensione massima ragionevole */
+                height: auto;
+                display: block;
+                margin: 0 auto 10px;
+            }
+
+            /* Impila i pulsanti di navigazione (avanti/indietro) e del riepilogo */
+            .navigation-buttons, .summary-buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            /* Assicura che il riepilogo non sia troppo largo su schermi piccoli */
+            #summary {
+                padding: 15px;
+                width: auto;
+            }
+        }
+    </style>
 </head>
 <body>
 
@@ -157,11 +227,11 @@
             <input type="hidden" class="choice-holder" name="arrosto_potatoes">
             <div class="choice-button-container">
                 <button type="button" class="choice-btn" data-choice="Patate arrosto" data-next-step="dessert-choice">
-                    <img src="photos/arrosto.jpg" alt="Patate arrosto" style="width:100px; height:auto; display:block; margin: 0 auto 10px;">
+                    <img src="photos/arrosto.jpg" alt="Patate arrosto">
                     Patate arrosto
                 </button>
                 <button type="button" class="choice-btn" data-choice="Patate duchessa" data-next-step="dessert-choice">
-                    <img src="photos/duchessa.jpg" alt="Patate duchessa" style="width:100px; height:auto; display:block; margin: 0 auto 10px;">
+                    <img src="photos/duchessa.jpg" alt="Patate duchessa">
                     Patate duchessa
                 </button>
             </div>
