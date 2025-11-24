@@ -2,460 +2,408 @@
 @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Lato&display=swap');
 
 html {
-    height: 100%;
-    font-size: calc(0.6vw + 0.8vh);
+height: 100%;
+/* Imposto la dimensione del font di base in modo che si adatti allo schermo */
+font-size: calc(0.6vw + 0.8vh);
 }
 
-/* Stili di base per il corpo della pagina */
+/* Stili di base per il corpo della pagina /
 body {
-    font-family: 'Lato', sans-serif;
-    background-color: #101729;
-    margin: 0;
-    overflow-y: auto; /* ← MODIFICATO: prima hidden */
-    color: #fff;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    line-height: 1.5;
-    text-align: center;
+font-family: 'Lato', sans-serif;
+background-color: #101729; / Blu profondo /
+/ Impedisco lo scorrimento e imposto l'altezza al 100% dello schermo /
+height: 100vh;
+margin: 0;
+overflow: hidden;
+color: #fff;
+display: flex;
+flex-direction: column;
+align-items: center; / Centra orizzontalmente /
+justify-content: center; / Centra verticalmente */
+line-height: 1.5;
+text-align: center;
 }
 
 /* Stile per il canvas dei fuochi d'artificio */
 #fireworks-canvas {
-    display: block;
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -1;
-    pointer-events: none;
+display: block;
+position: fixed;
+inset: 0;
+width: 100%;
+height: 100%;
+z-index: -1;
+pointer-events: none;
 }
 
-/* Stile per la fila di avatar in alto */
+/* Stile per la fila di avatar in alto /
 .voters-top-row {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;    
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 10px 0;
-    background-color: rgba(16, 23, 41, 0.8);
-    backdrop-filter: blur(5px);
-    z-index: 101;
-    gap: 15px;
-    flex-wrap: wrap;
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+display: flex; / Impostato su flex per essere visibile /
+justify-content: center;
+align-items: center;
+padding: 10px 0;
+background-color: rgba(16, 23, 41, 0.8); / Sfondo semi-trasparente scuro /
+backdrop-filter: blur(5px);
+z-index: 101; / Sopra tutto il resto /
+gap: 15px;
+flex-wrap: wrap; / Permette alle foto di andare a capo se sono troppe */
 }
 
 .voter-top-avatar {
-    width: 120px;
-    height: 120px;
-    object-fit: cover;
-    border-radius: 8px;
-    border: none;
-    transition: transform 0.2s ease;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+width: 120px;  /* Imposto una larghezza fissa /
+height: 120px; / Imposto un'altezza fissa /
+object-fit: cover; / Questa è la proprietà chiave per rendere le foto visibili e uniformi /
+border-radius: 8px; / Angoli leggermente arrotondati per un look moderno /
+border: none; / Rimuovo la cornice come richiesto /
+transition: transform 0.2s ease;
+box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4); / Aggiunta un'ombra per dare profondità */
 }
 
 .voter-top-avatar:hover {
-    transform: scale(1.1);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.5);
+transform: scale(1.1); /* L'ingrandimento al passaggio del mouse ora è più evidente */
+box-shadow: 0 6px 15px rgba(0, 0, 0, 0.5);
 }
 
-/* Titoli principali */
+/* Titoli principali /
 h1, h2, legend {
-    font-family: 'Fredoka One', cursive;
-    color: #f9c74f;
-    margin-bottom: 10px;
-    font-weight: 700;
+font-family: 'Fredoka One', cursive;
+color: #f9c74f; / Giallo solare */
+margin-bottom: 10px;
+font-weight: 700;
 }
 
 h1 {
-    font-size: 3.5rem;
-    text-shadow: 0 0 15px rgba(249, 199, 79, 0.5);
-    margin-bottom: 20px;
+font-size: 3.5rem;
+text-shadow: 0 0 15px rgba(249, 199, 79, 0.5);
+margin-bottom: 20px;
 }
 
 h2 {
-    font-size: 1.8rem;
-    color: #fff;
+font-size: 1.8rem;
+color: #fff;
 }
 
 legend {
-    font-size: 2rem;
-    padding-bottom: 10px;
-    margin-bottom: 20px;
-    border-bottom: 2px solid #43aa8b;
-    width: 100%;
-    text-align: center;
+font-size: 2rem;
+padding-bottom: 10px;
+margin-bottom: 20px;
+border-bottom: 2px solid #43aa8b; /* Bordo inferiore */
+width: 100%;
+text-align: center;
 }
 
-/* Contenitori principali */
+/* Contenitori principali (form, riepilogo, messaggio di successo) /
 form, .summary-container, #success-message {
-    width: 90%;
-    max-width: none;
+width: 90%;
+max-width: none; / Rimosso il limite di larghezza massima */
 }
 
-/* Fieldset */
+/* Fieldset (i vari step del menu) /
 fieldset {
-    background-color: rgba(27, 38, 59, 0.7);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    padding: 2rem;
-    margin: 0;
-    display: none;
-    animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+background-color: rgba(27, 38, 59, 0.7);
+backdrop-filter: blur(12px);
+border: 1px solid rgba(255, 255, 255, 0.1);
+border-radius: 20px;
+padding: 2rem;
+margin: 0;
+display: none; / Nascosto di default, gestito da JS */
+animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
 }
 
-@keyframes popIn { 
-    from { opacity:0; transform: scale(0.9); } 
-    to { opacity:1; transform: scale(1); } 
+@keyframes popIn {
+from { opacity:0; transform: scale(0.9); }
+to { opacity:1; transform: scale(1); }
 }
 
 fieldset.active {
-    display: block;
+display: block; /* Mostra lo step attivo */
 }
 
-/* Contenitore pulsanti */
+/* Contenitore per i pulsanti di scelta /
 .choice-button-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1.5rem;
-    justify-content: center;
-    margin-bottom: 20px;
+display: flex;
+flex-wrap: wrap;
+gap: 1.5rem; / Uso 'rem' per rendere lo spazio scalabile /
+justify-content: center; / Centra i pulsanti */
+margin-bottom: 20px;
 }
 
-/* Pulsanti */
+/* Stile generale dei pulsanti /
 .choice-btn, .nav-btn, .submit-button {
-    font-family: 'Fredoka One', cursive;
-    font-size: 1.8rem;
-    color: #415a77;
-    background: #f9c74f;
-    border: none;
-    border-radius: 15px;
-    padding: 1rem 2rem;
-    cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, text-shadow 0.2s ease;
-    font-weight: 700;
-    box-shadow: 0 5px 15px rgba(249, 199, 79, 0.3);
-    text-shadow: 
-        -1px -1px 0 #fff,  
-         1px -1px 0 #fff,
-        -1px  1px 0 #fff,
-         1px  1px 0 #fff;
+font-family: 'Fredoka One', cursive;
+font-size: 1.8rem; / Dimensione del font aumentata /
+color: #415a77; / Testo azzurro/blu /
+background: #f9c74f; / Giallo solare, come i titoli /
+border: none; / Rimosso il bordo dal pulsante /
+border-radius: 15px; / Leggermente più squadrato /
+padding: 1rem 2rem; / Padding aumentato /
+cursor: pointer;
+transition: transform 0.2s ease, box-shadow 0.2s ease, text-shadow 0.2s ease;
+font-weight: 700;
+/ Aggiunta ombra colorata gialla /
+box-shadow: 0 5px 15px rgba(249, 199, 79, 0.3);
+/ Aggiunta contorno bianco al testo */
+text-shadow:
+-1px -1px 0 #fff,
+1px -1px 0 #fff,
+-1px  1px 0 #fff,
+1px  1px 0 #fff;
 }
 
+/* Stile per i pulsanti che contengono un'immagine /
 .choice-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
+display: flex;
+flex-direction: column;
+align-items: center;
+gap: 0.5rem; / Spazio tra testo e immagine */
 }
 
 .choice-btn-img {
-    width: 100px;
-    height: auto;
-    border-radius: 10px;
-    pointer-events: none;
+width: 100px; /* Larghezza fissa per l'immagine /
+height: auto; / Altezza automatica per mantenere le proporzioni /
+border-radius: 10px; / Angoli arrotondati /
+pointer-events: none; / L'immagine non intercetta i click */
 }
 
 .choice-btn:hover, .nav-btn:hover, .submit-button:hover {
-    transform: translateY(-4px) rotate(-2deg);
-    box-shadow: 0 10px 25px rgba(249, 199, 79, 0.5);
+transform: translateY(-4px) rotate(-2deg);
+/* Ombra colorata più intensa al passaggio del mouse */
+box-shadow: 0 10px 25px rgba(249, 199, 79, 0.5);
 }
 
-/* Stato selezionato */
+/* Pulsante di scelta attivo /
 .choice-btn.active-choice,
+/ Stile per i pulsanti-checkbox degli antipasti quando sono selezionati /
 input[type="checkbox"]:checked + label.choice-btn,
 .choice-btn.antipasto-selected {
-    background: #43aa8b;
-    color: #fff;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(67, 170, 139, 0.4);
-    text-shadow: none;
+background: #43aa8b; / Verde quando selezionato /
+color: #fff;
+transform: translateY(-2px);
+box-shadow: 0 6px 15px rgba(67, 170, 139, 0.4);
+/ Rimuove il contorno bianco dal testo quando il pulsante è attivo */
+text-shadow: none;
 }
 
-/* Checklist antipasti */
+/* --- Stili specifici per la checklist degli antipasti --- */
+
+/* Stile per il wrapper di aggiunta nella checklist /
 fieldset[data-step-name="antipasto-choice"] .add-item-wrapper {
-    margin-top: 10px;
-    display: flex;
-    align-items: center;
-    width: 100%;
+margin-top: 10px; / Piccolo spazio sopra */
+display: flex;
+align-items: center;
+width: 100%;
 }
 
+/* Stile per il pulsante "Aggiungi opzione" nella checklist /
 fieldset[data-step-name="antipasto-choice"] .show-add-form-btn {
-    background: none;
-    padding: 0;
-    font-size: 1.5rem;
-    color: #f9c74f;
-    text-align: left;
-    justify-content: flex-start;
+background: none;
+padding: 0;
+font-size: 1.5rem;
+color: #f9c74f; / Giallo per farlo risaltare */
+text-align: left;
+justify-content: flex-start;
 }
 
-/* Navigazione */
+/* Pulsanti di navigazione (indietro/avanti) */
 .navigation-buttons {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 1.5rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    padding-top: 1rem;
+display: flex;
+justify-content: space-between;
+margin-top: 1.5rem;
+border-top: 1px solid rgba(255, 255, 255, 0.1);
+padding-top: 1rem;
 }
 
 .submit-button {
-    background: #f94144;
-    color: #fff;
+background: #f94144;
+color: #fff;
 }
 
-/* Aggiunta nuovi elementi */
+/* Contenitori per aggiungere nuovi elementi */
 .add-item-wrapper {
-    margin-top: 20px;
+margin-top: 20px;
 }
 
 input[type="text"] {
-    font-family: 'Lato', sans-serif;
-    font-size: 1.1rem;
-    color: #fff;
-    background-color: #101729;
-    padding: 10px;
-    border: 2px solid #415a77;
-    border-radius: 10px;
-    text-align: center;
-    width: calc(100% - 22px);
-    transition: all 0.3s ease;
+font-family: 'Lato', sans-serif;
+font-size: 1.1rem;
+color: #fff;
+background-color: #101729;
+padding: 10px;
+border: 2px solid #415a77;
+border-radius: 10px;
+text-align: center;
+width: calc(100% - 22px); /* Per compensare il padding */
+transition: all 0.3s ease;
 }
 
 input[type="text"]:focus {
-    outline: none;
-    border-color: #f94144;
-    box-shadow: 0 0 15px rgba(249, 65, 68, 0.4);
+outline: none;
+border-color: #f94144;
+box-shadow: 0 0 15px rgba(249, 65, 68, 0.4);
 }
 
-/* Nascondo checkbox nativa */
+/* Nascondiamo la checkbox nativa, ma la manteniamo funzionale */
 input[type="checkbox"] {
-    display: none;
+display: none;
 }
 
-/* Riepilogo */
+/* Riepilogo dell'ordine */
 .summary-container ul {
-    list-style-type: none;
-    padding: 0;
-    text-align: center;
+list-style-type: none;
+padding: 0;
+text-align: center;
 }
 
 .summary-container li {
-    font-size: 1.1rem;
-    margin-bottom: 10px;
-    background-color: rgba(16, 23, 41, 0.7);
-    padding: 15px;
-    border-radius: 10px;
-    border-left: 4px solid #f9c74f;
+font-size: 1.1rem;
+margin-bottom: 10px;
+background-color: rgba(16, 23, 41, 0.7);
+padding: 15px;
+border-radius: 10px;
+border-left: 4px solid #f9c74f;
 }
 
-/* Avatar in movimento */
+/* Contenitore per gli avatar nel riepilogo /
 #voter-avatars-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    overflow: hidden;
+position: absolute;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+pointer-events: none; / Non intercetta i click */
+overflow: hidden;
 }
 
 .voter-avatar {
-    position: absolute;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Fredoka One', cursive;
-    font-size: 1.2rem;
-    color: white;
+position: absolute;
+width: 50px;
+height: 50px;
+border-radius: 50%;
+display: flex;
+align-items: center;
+justify-content: center;
+font-family: 'Fredoka One', cursive;
+font-size: 1.2rem;
+color: white;
 }
 
 .summary-container li .summary-img {
-    vertical-align: middle; 
-    width: 40px; 
-    height: 40px; 
-    border-radius: 5px; 
-    margin: 0 5px;
+vertical-align: middle; width: 40px; height: 40px;
+border-radius: 5px; margin: 0 5px;
 }
 
 .summary-container li strong {
-    color: #f9c74f;
-    margin-right: 10px;
+color: #f9c74f;
+margin-right: 10px;
 }
 
-/* Riepilogo moderno */
+/* Stili per il nuovo riepilogo /
 .summary-grid {
-    display: grid;
-    grid-template-areas: 
-        "user-summary"
-        "other-voters"
-        "stats-button";
-    gap: 30px;
+display: grid;
+grid-template-areas:
+"user-summary"
+"other-voters"
+"stats-button";
+gap: 30px;
 }
-
 .user-summary-box {
-    grid-area: user-summary;
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    background: transparent;
-    padding: 1rem;
-    border-radius: 0;
-    border: none;
+grid-area: user-summary;
+display: flex;
+align-items: center;
+gap: 20px;
+background: transparent;
+padding: 1rem;
+border-radius: 0;
+border: none;
 }
-
 .user-summary-box img {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    border: 4px solid #f9c74f;
-    object-fit: cover;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+width: 120px; / Aumentata dimensione /
+height: 120px;
+border-radius: 50%;
+border: 4px solid #f9c74f;
+object-fit: cover; / Assicura che l'immagine copra l'area senza distorsioni */
+box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
-
 .user-summary-box .user-details {
-    text-align: left;
+text-align: left;
 }
-
 .other-voters-box { grid-area: other-voters; }
-
-.voters-list { 
-    display: flex; 
-    justify-content: center; 
-    gap: 15px; 
-    flex-wrap: wrap; 
-    margin-top: 10px; 
-}
-
-.voter-avatar { 
-    text-align: center; 
-    transition: transform 0.2s; 
-}
-
+.voters-list { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-top: 10px; }
+.voter-avatar { text-align: center; transition: transform 0.2s; }
 .voter-avatar:hover { transform: scale(1.05); }
-
-.voter-avatar img { 
-    width: 80px; 
-    height: 80px; 
-    border-radius: 50%; 
-    border: 3px solid #4d908e; 
-    object-fit: cover; 
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2); 
+.voter-avatar img { width: 80px; height: 80px; border-radius: 50%; border: 3px solid #4d908e; object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+.voter-avatar p { margin: 5px 0 0; font-size: 1rem; }
+.stats-button-box {
+grid-area: stats-button;
+margin-top: 20px;
 }
 
-.voter-avatar p { 
-    margin: 5px 0 0; 
-    font-size: 1rem; 
-}
-
-.stats-button-box { 
-    grid-area: stats-button;
-    margin-top: 20px;
-}
-
-/* Popup modale */
+/* Popup modale /
 #modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: none;
-    z-index: 99;
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background-color: rgba(0, 0, 0, 0.5);
+display: none; / Gestito da JS */
+z-index: 99;
 }
 
 body.modal-active #modal-overlay {
-    display: block;
+display: block;
 }
 
 fieldset[data-modal="true"] {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 100;
-    width: 90%;
-    max-width: 500px;
-    animation: fadeInPopup 0.5s ease-out forwards;
+position: fixed;
+top: 50%;
+left: 50%;
+transform: translate(-50%, -50%);
+z-index: 100;
+width: 90%;
+max-width: 500px;
+animation: fadeInPopup 0.5s ease-out forwards;
 }
 
-/* Popup messaggi */
+/* Stile specifico per il popup dei messaggi personalizzati */
 fieldset[data-step-name="custom-message-popup"] {
-    background: radial-gradient(circle, #2a3b5c 0%, #1b263b 100%);
-    border: 2px solid #f9c74f;
-    box-shadow: 0 0 40px rgba(249, 199, 79, 0.4);
+background: radial-gradient(circle, #2a3b5c 0%, #1b263b 100%);
+border: 2px solid #f9c74f;
+box-shadow: 0 0 40px rgba(249, 199, 79, 0.4);
 }
 
 fieldset[data-step-name="custom-message-popup"] legend {
-    color: #fff;
-    border-bottom-color: #f94144;
+color: #fff;
+border-bottom-color: #f94144;
 }
 
+/* Animazione di entrata e uscita per il popup */
 @keyframes fadeInPopup {
-    from { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
-    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+from { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
 
 @keyframes fadeOutPopup {
-    from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-    to { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+to { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
 }
 
 .fade-out {
-    animation: fadeOutPopup 0.5s ease-in forwards !important;
+animation: fadeOutPopup 0.5s ease-in forwards !important;
 }
-
 .countdown-item span {
-    font-family: 'Fredoka One', cursive;
-    font-size: 3rem;
-    color: #f9c74f;
-    line-height: 1;
+font-family: 'Fredoka One', cursive;
+font-size: 3rem;
+color: #f9c74f;
+line-height: 1;
 }
 
 .countdown-label {
-    font-size: 0.9rem;
-    color: #fff;
-    margin-top: 5px;
+font-size: 0.9rem;
+color: #fff;
+margin-top: 5px;
 }
-
-/* 📱 ADATTAMENTI MOBILE — SOLO LE COSE CHE MI HAI CHIESTO */
-@media (max-width: 600px) {
-
-    .voter-top-avatar {
-        width: 70px;
-        height: 70px;
-    }
-
-    .choice-btn-img {
-        width: 70px;
-    }
-
-    h1 {
-        font-size: 2.2rem;
-    }
-
-    .user-summary-box img {
-        width: 80px;
-        height: 80px;
-    }
-
-    .voter-avatar img {
-        width: 60px;
-        height: 60px;
-    }
-
-    .voters-top-row {
-        padding: 5px 0;
-        gap: 8px;
-    }
-    }
