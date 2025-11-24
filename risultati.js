@@ -27,7 +27,10 @@ const getPhotoForUser = (name) => {
         'anna': 'Anna',
         'annachiara': 'Anna', // Entrambi puntano allo stesso file
         'dama': 'Dama',
+        'damato': 'Dama',
+        'lorenzo': 'Dama',
         'luca': 'Luca',
+        'lucapolla': 'Luca',
         'rocco': 'Rocco'
     };
 
