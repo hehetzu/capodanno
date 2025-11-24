@@ -1,5 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
 import { getDatabase, ref, get, set, push, runTransaction } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+import { specialFileNames } from './config.js'; // Importa la lista centralizzata
 
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -259,11 +260,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Funzione per ottenere il percorso della foto in base al nome
     const getPhotoForUser = (name) => {
         const lowerCaseName = name.toLowerCase().replace(/\s+/g, '');
-
-        // Mappa per gestire eccezioni nei nomi dei file (es. maiuscole)
-        const specialFileNames = {
-            'emanuele': 'Emanuele'
-        };
 
         // Usa il nome speciale se esiste, altrimenti usa il nome in minuscolo
         const fileName = specialFileNames[lowerCaseName] || lowerCaseName;

@@ -1,5 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
 import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+import { specialFileNames } from './config.js'; // Importa la lista centralizzata
 
 // --- CONFIG FIREBASE ---
 const firebaseConfig = {
@@ -18,21 +19,6 @@ const db = getDatabase(app);
 // --- FOTO UTENTE AUTOMATICA ---
 const getPhotoForUser = (name) => {
     const lowerCaseName = name.toLowerCase().replace(/\s+/g, '');
-
-    // Mappa per gestire eccezioni nei nomi dei file (es. maiuscole)
-    const specialFileNames = {
-        'emanuele': 'Emanuele',
-        'giulia': 'Giulia',
-        'giada': 'Giada',
-        'anna': 'Anna',
-        'annachiara': 'Anna', // Entrambi puntano allo stesso file
-        'dama': 'Dama',
-        'damato': 'Dama',
-        'lorenzo': 'Dama',
-        'luca': 'Luca',
-        'lucapolla': 'Luca',
-        'rocco': 'Rocco'
-    };
 
     // Usa il nome speciale se esiste, altrimenti usa il nome in minuscolo
     const fileName = specialFileNames[lowerCaseName] || lowerCaseName;
