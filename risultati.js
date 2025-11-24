@@ -21,7 +21,14 @@ const getPhotoForUser = (name) => {
 
     // Mappa per gestire eccezioni nei nomi dei file (es. maiuscole)
     const specialFileNames = {
-        'emanuele': 'Emanuele'
+        'emanuele': 'Emanuele',
+        'giulia': 'Giulia',
+        'giada': 'Giada',
+        'anna': 'Anna',
+        'annachiara': 'Anna', // Entrambi puntano allo stesso file
+        'dama': 'Dama',
+        'luca': 'Luca',
+        'rocco': 'Rocco'
     };
 
     // Usa il nome speciale se esiste, altrimenti usa il nome in minuscolo
