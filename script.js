@@ -434,34 +434,66 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Aggiorna le statistiche
             const statsRef = ref(db, 'stats');
-            await runTransaction(statsRef, (currentStats) => {
-                if (!currentStats) {
-                    currentStats = {};
+            await runTransaction(statsRef, (currentData) => {
+                if (!currentData) {
+                    currentData = {};
                 }
-                const increment = (category, item) => {
-                    if (!currentStats[category]) currentStats[category] = {};
-                    if (!currentStats[category][item]) currentStats[category][item] = 0;
-                    currentStats[category][item]++;
-                };
-                for (const key in orderData) {
-                    const value = orderData[key];
-                    if (Array.isArray(value)) {
-                        value.forEach(item => increment('antipasto', item));
-                    } else if (key !== 'main_choice' && value) { // Non contare la scelta principale e i valori vuoti
-                        if (value) increment(key, value);
+                // Funzione per modificare il conteggio (incremento o decremento)
+                const updateCount = (data, operation, mainChoice) => {
+                    if (!data) return;
+                    const multiplier = operation === 'increment' ? 1 : -1;
+
+                    const processItem = (category, item) => {
+                        if (!item) return;
+                        // Pulisce il nome dell'item per evitare duplicati (es. "  Piatto  " diventa "Piatto")
+                        item = typeof item === 'string' ? item.trim() : item;
+                        if (!currentData[category]) currentData[category] = {};
+                        if (!currentData[category][item]) currentData[category][item] = 0;
+                        currentData[category][item] += multiplier;
+                    };
+
+                    // Processa ogni chiave nei dati
+                    for (const key in data) {
+                        if (key === 'userName' || key === 'main_choice') continue; // Salta il nome utente e la scelta principale
+                        const value = data[key];
+                        if (Array.isArray(value)) {
+                            value.forEach(item => processItem('antipasto', item));
+                        } else {
+                            processItem(key, value);
+                        }
                     }
+
+                    // Processa la scelta principale separatamente
+                    if (mainChoice) {
+                        processItem('main_choice', mainChoice);
+                    }
+                };
+
+                // 2. Se esiste un vecchio ordine, decrementa le sue statistiche
+                if (oldOrderData) {
+                    updateCount(oldOrderData, 'decrement', oldOrderData.main_choice);
                 }
-                // Incrementa la scelta principale separatamente
-                if (orderData.main_choice) {
-                    increment('main_choice', orderData.main_choice);
-                }
-                return currentStats;
+
+                // 3. Incrementa le statistiche con il nuovo ordine
+                updateCount(orderData, 'increment', orderData.main_choice);
+
+                return currentData;
             });
 
-            // Salva il singolo ordine
-            const newOrderRef = push(ref(db, 'orders'));
-            await set(newOrderRef, orderData);
-            console.log("Ordine salvato con ID: ", newOrderRef.key);
+            // 4. Salva il singolo ordine: aggiorna se esiste, crea se non esiste
+            if (existingOrderKey) {
+                // Aggiorna il voto esistente
+                // Assicuriamoci di mantenere il nome utente originale per coerenza
+                // con la logica delle foto (es. "Emanuele" con la E maiuscola)
+                orderData.userName = userName;
+                await set(ref(db, `orders/${existingOrderKey}`), orderData);
+                console.log("Ordine esistente aggiornato per l'utente:", userName);
+            } else {
+                // Salva come nuovo ordine
+                const newOrderRef = push(ref(db, 'orders'));
+                await set(newOrderRef, orderData);
+                console.log("Nuovo ordine salvato con ID: ", newOrderRef.key);
+            }
 
             // Reindirizza alla pagina dei risultati
             window.location.href = 'risultati.html';
