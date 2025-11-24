@@ -16,8 +16,7 @@ export const specialFileNames = {
     'lucapolla': 'Luca',
     'rocco': 'Rocco',
     'saba': 'Saba',
-    'sabatino': 'Saba',
-    'matteo' : 'Matteo',
-
-
+    'sabatino': 'Saba'
+    // 'matteo' non serve qui, perché il file 'matteo.webp' è già tutto minuscolo
+    // e viene trovato automaticamente dalla logica di default.
 };
