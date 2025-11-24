@@ -430,7 +430,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Invia la notifica a Telegram (non blocca il resto del processo)
             // Passiamo la versione modificata per la notifica
-            sendTelegramNotification(notificationOrderData);
+            await sendTelegramNotification(notificationOrderData);
 
             // Aggiorna le statistiche
             const statsRef = ref(db, 'stats');
