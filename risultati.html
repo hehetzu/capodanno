@@ -5,50 +5,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Risultati Votazione Menu</title>
     <link rel="stylesheet" href="style.css">
+
     <style>
         body { 
-            overflow-y: auto !important; /* Permette lo scorrimento verticale */
-            overflow-x: hidden; /* Impedisce lo scorrimento orizzontale causato dalle foto */
+            overflow-y: auto !important;
+            overflow-x: hidden;
         } 
 
-        /* Nuovo contenitore per le foto di sfondo */
+        /* Contenitore per le foto */
         #background-avatars {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 0; /* Sta sopra lo sfondo del body, ma sotto il contenuto */
-            pointer-events: none; /* Non intercetta i click di per sé */
+            z-index: 0;
+            pointer-events: none;
         }
 
-        /* Stile per le foto sparse sullo sfondo */
+        /* FOTO DI SFONDO – versione RESPONSIVA */
         .scattered-avatar {
             position: absolute;
-            cursor: pointer; /* Cambia il cursore per indicare che sono cliccabili */
-            pointer-events: auto; /* MA le foto possono essere cliccate */
-            width: 200px; /* Dimensione più visibile e gestibile */
-            height: 200px; /* Dimensione più visibile e gestibile */
-            object-fit: contain; /* Mostra l'intera immagine senza tagliarla */
-            border-radius: 8px; /* Angoli arrotondati per un look quadrato ma morbido */
-            border: none; /* Rimuove la cornice */
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); /* Ombra che segue la forma */
-            opacity: 1; 
-            transition: transform 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            pointer-events: auto;
+            width: min(22vw, 180px);   /* si adatta allo schermo */
+            height: min(22vw, 180px);
+            object-fit: contain;
+            border-radius: 8px;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+            transition: transform 0.3s ease, opacity 0.3s ease;
         }
 
-        /* Assicura che il contenuto principale stia sopra le foto */
+        /* Telefoni piccoli */
+        @media (max-width: 600px) {
+            .scattered-avatar {
+                width: min(35vw, 150px);
+                height: min(35vw, 150px);
+            }
+        }
+
         .container {
             position: relative;
             z-index: 1;
         }
 
         .scattered-avatar:hover {
-            transform: scale(1.2) !important; /* Ingrandisce la foto al passaggio del mouse (la rotazione rimane) */
-            opacity: 1;
+            transform: scale(1.2);
         }
 
-        /* Stili per l'effetto Lightbox (ingrandimento foto) */
+        /* LIGHTBOX */
         #lightbox-overlay {
             position: fixed;
             top: 0;
@@ -56,22 +61,20 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.85);
-            display: none; /* Nascosto di default, gestito da JS */
+            display: none;
             place-items: center;
-            z-index: 1000; /* Sopra a tutto */
-            cursor: pointer; /* Cursore per indicare che si può chiudere */
-            opacity: 0; /* Nascosto per l'animazione */
+            z-index: 1000;
+            opacity: 0;
             transition: opacity 0.4s ease;
         }
 
         #lightbox-overlay.visible {
-            display: grid; /* Usa grid per centrare facilmente */
+            display: grid;
             opacity: 1;
         }
 
         #lightbox-content {
             text-align: center;
-            cursor: default;
             transform: scale(0.8);
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
@@ -83,14 +86,12 @@
         #lightbox-image {
             max-width: 80vw;
             max-height: 80vh;
-            border: none; /* Rimuove la cornice */
             border-radius: 4px;
             box-shadow: 0 0 50px rgba(255, 255, 255, 0.3);
-            object-fit: contain; /* Mostra anche qui l'intera immagine, senza tagli */
+            object-fit: contain;
         }
 
         #lightbox-caption {
-            font-family: 'Fredoka One', cursive;
             font-size: 2rem;
             color: #f9c74f;
             margin-top: 15px;
@@ -98,25 +99,23 @@
         }
     </style>
 </head>
+
 <body>
 
-    <!-- Nuovo contenitore per le foto, che verranno aggiunte qui da JS -->
     <div id="background-avatars"></div>
 
     <div class="container">
         <h1>Riepilogo Community</h1>
 
-        <!-- Contenitore per il riepilogo delle statistiche -->
         <div id="stats-summary" class="summary-container">
             <p>Caricamento dei risultati...</p>
         </div>
 
         <div style="text-align: center; margin-top: 30px;">
-             <a href="menu.html" class="nav-btn">⬅️ Torna al menu</a>
+            <a href="menu.html" class="nav-btn">⬅️ Torna al menu</a>
         </div>
     </div>
 
-    <!-- Contenitore per l'effetto Lightbox -->
     <div id="lightbox-overlay">
         <div id="lightbox-content">
             <img id="lightbox-image" src="" alt="Immagine ingrandita">
@@ -124,8 +123,6 @@
         </div>
     </div>
 
-
-    <!-- Script per la logica della pagina dei risultati -->
     <script type="module" src="risultati.js"></script>
 
 </body>
