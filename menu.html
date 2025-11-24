@@ -50,7 +50,7 @@
         <fieldset data-step-name="pizza-flavor">
             <legend>Che gusto ti ispira? 🤔</legend>
             <input type="hidden" class="choice-holder" name="pizza_flavor">
-            <div class="choice-button-container" id="pizza-flavors-list">
+            <div class="choice-button-container" id="pizza-flavors-list" data-next-step-for-new-options="dessert-choice">
                 <button type="button" class="choice-btn" data-choice="Margherita" data-next-step="dessert-choice">Margherita</button>
                 <button type="button" class="choice-btn" data-choice="Diavola" data-next-step="dessert-choice">Diavola</button>
             </div>
@@ -96,7 +96,7 @@
         <fieldset data-step-name="primo-choice">
             <legend>Un bel primo ci sta? 🍝</legend>
             <input type="hidden" class="choice-holder" name="primo">
-            <div class="choice-button-container">
+            <div class="choice-button-container" data-next-step-for-new-options="secondo-choice">
                 <button type="button" class="choice-btn" data-choice="Agnolotti con i funghi" data-next-step="secondo-choice">Agnolotti con i funghi</button>
                 <button type="button" class="choice-btn" data-choice="Tagliatelle ai funghi" data-next-step="secondo-choice">Tagliatelle ai funghi</button>
                 <button type="button" class="choice-btn" data-choice="Agnolotti al sugo" data-next-step="agnolotti-sauce">Agnolotti al sugo</button>
@@ -132,7 +132,7 @@
         <fieldset data-step-name="secondo-choice">
             <legend>E come secondo? 🥩</legend>
             <input type="hidden" class="choice-holder" name="secondo">
-            <div class="choice-button-container">
+            <div class="choice-button-container" data-next-step-for-new-options="dessert-choice">
                 <button type="button" class="choice-btn" data-choice="Cappello del prete al Barolo" data-next-step="cappello-prete-side">Cappello del prete al Barolo</button>
                 <button type="button" class="choice-btn" data-choice="Filetto di manzo" data-next-step="dessert-choice">Filetto di manzo</button>
                 <button type="button" class="choice-btn" data-choice="Arrosto con patate" data-next-step="arrosto-potatoes">Arrosto con patate</button>
@@ -187,7 +187,7 @@
         <fieldset data-step-name="dessert-choice">
             <legend>Spazio per il dolce? 🍰</legend>
             <input type="hidden" class="choice-holder" name="dessert">
-            <div class="choice-button-container">
+            <div class="choice-button-container" data-next-step-for-new-options="fireworks-choice">
                 <button type="button" class="choice-btn" data-choice="Tiramisù" data-next-step="fireworks-choice">Tiramisù</button>
                 <button type="button" class="choice-btn" data-choice="Panna Cotta" data-next-step="pannacotta-flavor">Panna Cotta</button>
                 <button type="button" class="choice-btn" data-choice="Panettone" data-next-step="fireworks-choice">Panettone</button>

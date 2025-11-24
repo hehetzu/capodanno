@@ -223,6 +223,27 @@ document.addEventListener('DOMContentLoaded', async () => {
             newButton.className = 'choice-btn';
             newButton.dataset.choice = name;
             newButton.textContent = name;
+
+            // Aggiunge la logica "intelligente" anche ai piatti caricati dal DB
+            let nextStep = container.dataset.nextStepForNewOptions;
+            const nameLower = name.toLowerCase();
+
+            // Aggiunto 'pizza_flavor' per future espansioni
+            if (category === 'pizza_flavor' && nameLower.includes('parmigiana')) {
+                // Esempio per il futuro: nextStep = 'parmigiana-options';
+            } else if (category === 'primo' && nameLower.includes('agnolotti')) {
+                nextStep = 'agnolotti-sauce';
+            } else if (category === 'secondo' && nameLower.includes('arrosto')) {
+                nextStep = 'arrosto-potatoes';
+            } else if (category === 'secondo' && (nameLower.includes('cappello del prete') || nameLower.includes('cappello prete'))) {
+                nextStep = 'cappello-prete-side';
+            } else if (category === 'dessert' && (nameLower.includes('panna cotta') || nameLower.includes('pannacotta'))) {
+                nextStep = 'pannacotta-flavor';
+            }
+            if (nextStep) {
+                newButton.dataset.nextStep = nextStep;
+            }
+
             container.appendChild(newButton);
         }
     };
@@ -340,6 +361,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
+
     const confirmOrder = async () => {
         try {
             summaryContainer.style.display = 'none';
@@ -368,29 +390,25 @@ document.addEventListener('DOMContentLoaded', async () => {
                 delete orderData.pizza_flavor;
             }
 
-            // Unisci i piatti condizionali
-            if (orderData.agnolotti_sauce) {
-                orderData.primo = `${orderData.primo} (${orderData.agnolotti_sauce})`;
-                delete orderData.agnolotti_sauce;
+            // Unisci le scelte condizionali per il riepilogo della notifica
+            const notificationOrderData = { ...orderData };
+            if (notificationOrderData.agnolotti_sauce) {
+                notificationOrderData.primo = `${notificationOrderData.primo} (${notificationOrderData.agnolotti_sauce})`;
             }
-            if (orderData.arrosto_potatoes) {
-                orderData.secondo = `${orderData.secondo} (${orderData.arrosto_potatoes})`;
-                delete orderData.arrosto_potatoes;
+            if (notificationOrderData.cappello_prete_side) {
+                const side = notificationOrderData.cappello_prete_side === 'Polenta' ? 'con Polenta' : `con ${notificationOrderData.arrosto_potatoes}`;
+                notificationOrderData.secondo = `${notificationOrderData.secondo} (${side})`;
+            } 
+            else if (notificationOrderData.arrosto_potatoes) {
+                notificationOrderData.secondo = `${notificationOrderData.secondo} (${notificationOrderData.arrosto_potatoes})`;
             }
-            if (orderData.secondo === 'Cappello del prete al Barolo') {
-                if (orderData.cappello_prete_side === 'Polenta') {
-                    orderData.secondo = `${orderData.secondo} (con Polenta)`;
-                } else if (orderData.cappello_prete_side === 'Patate') {
-                    orderData.secondo = `${orderData.secondo} (con ${orderData.arrosto_potatoes})`;
-                }
-            }
-            if (orderData.pannacotta_flavor) {
-                orderData.dessert = `${orderData.dessert} (${orderData.pannacotta_flavor})`;
-                delete orderData.pannacotta_flavor;
+            if (notificationOrderData.pannacotta_flavor) {
+                notificationOrderData.dessert = `${notificationOrderData.dessert} (${notificationOrderData.pannacotta_flavor})`;
             }
 
             // Invia la notifica a Telegram (non blocca il resto del processo)
-            sendTelegramNotification(orderData);
+            // Passiamo la versione modificata per la notifica
+            sendTelegramNotification(notificationOrderData);
 
             // Aggiorna le statistiche
             const statsRef = ref(db, 'stats');
@@ -779,8 +797,29 @@ document.addEventListener('DOMContentLoaded', async () => {
                 newButton.className = 'choice-btn';
                 newButton.dataset.choice = newItemText;
                 newButton.textContent = newItemText;
+
+                // Legge il passo successivo dal contenitore e lo assegna al nuovo pulsante
+                let nextStep = listContainer.dataset.nextStepForNewOptions;
+                const newItemLower = newItemText.toLowerCase();
+
+                // Logica per rendere i nuovi piatti "intelligenti" come quelli di default
+                // Aggiunto 'pizza_flavor' per future espansioni
+                if (category === 'pizza_flavor' && newItemLower.includes('parmigiana')) {
+                    // Esempio per il futuro: nextStep = 'parmigiana-options';
+                } else if (category === 'primo' && newItemLower.includes('agnolotti')) {
+                    nextStep = 'agnolotti-sauce';
+                } else if (category === 'secondo' && newItemLower.includes('arrosto')) {
+                    nextStep = 'arrosto-potatoes';
+                } else if (category === 'secondo' && (newItemLower.includes('cappello del prete') || newItemLower.includes('cappello prete'))) {
+                    nextStep = 'cappello-prete-side';
+                } else if (category === 'dessert' && (newItemLower.includes('panna cotta') || newItemLower.includes('pannacotta'))) {
+                    nextStep = 'pannacotta-flavor';
+                }
+                if (nextStep) {
+                    newButton.dataset.nextStep = nextStep;
+                }
+
                 listContainer.appendChild(newButton);
-                // Nota: i nuovi pulsanti non avranno data-next-step. La navigazione si fermerà qui.
             }
 
             input.value = '';
