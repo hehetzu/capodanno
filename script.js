@@ -145,10 +145,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     const allSteps = Array.from(form.querySelectorAll('fieldset'));
     const mainChoiceHolder = document.getElementById('mainChoiceHolder');
     let stepHistory = [allSteps[0]]; // Tiene traccia dei passi visitati
-
-    // Recupera i dati dell'utente e imposta un contatore per il click sulla pizza
-    const userGender = localStorage.getItem('userGender') || 'm'; // 'm' di default se non trovato
     const userName = localStorage.getItem('userName') || 'Ospite';
+
+    // --- Logica per determinare il genere in base al nome ---
+    const femaleNames = ['giada', 'giulia', 'marta', 'anna', 'annachiara', 'anna chiara'];
+    let userGender = 'm'; // Default a maschile
+
+    if (femaleNames.includes(userName.toLowerCase())) {
+        userGender = 'f'; // Imposta a femminile se il nome è nella lista
+    }
+    // Potresti anche salvare questa informazione per sessioni future (opzionale)
+    // localStorage.setItem('userGender', userGender);
+
     let pizzaYesClickCount = 0;
 
     // Mostra il pulsante di reset solo per l'utente "emanuele"
