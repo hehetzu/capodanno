@@ -3,23 +3,20 @@
 
 html {
     height: 100%;
-    /* Imposto la dimensione del font di base in modo che si adatti allo schermo */
     font-size: calc(0.6vw + 0.8vh);
 }
 
 /* Stili di base per il corpo della pagina */
 body {
     font-family: 'Lato', sans-serif;
-    background-color: #101729; /* Blu profondo */
-    /* Impedisco lo scorrimento e imposto l'altezza al 100% dello schermo */
-    height: 100vh;
+    background-color: #101729;
     margin: 0;
-    overflow: hidden;
+    overflow-y: auto; /* ← MODIFICATO: prima hidden */
     color: #fff;
     display: flex;
     flex-direction: column;
-    align-items: center; /* Centra orizzontalmente */
-    justify-content: center; /* Centra verticalmente */
+    align-items: center;
+    justify-content: center;
     line-height: 1.5;
     text-align: center;
 }
@@ -41,36 +38,36 @@ body {
     top: 0;
     left: 0;
     width: 100%;    
-    display: flex; /* Impostato su flex per essere visibile */
+    display: flex;
     justify-content: center;
     align-items: center;
     padding: 10px 0;
-    background-color: rgba(16, 23, 41, 0.8); /* Sfondo semi-trasparente scuro */
+    background-color: rgba(16, 23, 41, 0.8);
     backdrop-filter: blur(5px);
-    z-index: 101; /* Sopra tutto il resto */
+    z-index: 101;
     gap: 15px;
-    flex-wrap: wrap; /* Permette alle foto di andare a capo se sono troppe */
+    flex-wrap: wrap;
 }
 
 .voter-top-avatar {
-    width: 120px;  /* Imposto una larghezza fissa */
-    height: 120px; /* Imposto un'altezza fissa */
-    object-fit: cover; /* Questa è la proprietà chiave per rendere le foto visibili e uniformi */
-    border-radius: 8px; /* Angoli leggermente arrotondati per un look moderno */
-    border: none; /* Rimuovo la cornice come richiesto */
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: none;
     transition: transform 0.2s ease;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4); /* Aggiunta un'ombra per dare profondità */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
 }
 
 .voter-top-avatar:hover {
-    transform: scale(1.1); /* L'ingrandimento al passaggio del mouse ora è più evidente */
+    transform: scale(1.1);
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.5);
 }
 
 /* Titoli principali */
 h1, h2, legend {
     font-family: 'Fredoka One', cursive;
-    color: #f9c74f; /* Giallo solare */
+    color: #f9c74f;
     margin-bottom: 10px;
     font-weight: 700;
 }
@@ -90,18 +87,18 @@ legend {
     font-size: 2rem;
     padding-bottom: 10px;
     margin-bottom: 20px;
-    border-bottom: 2px solid #43aa8b; /* Bordo inferiore */
+    border-bottom: 2px solid #43aa8b;
     width: 100%;
     text-align: center;
 }
 
-/* Contenitori principali (form, riepilogo, messaggio di successo) */
+/* Contenitori principali */
 form, .summary-container, #success-message {
     width: 90%;
-    max-width: none; /* Rimosso il limite di larghezza massima */
+    max-width: none;
 }
 
-/* Fieldset (i vari step del menu) */
+/* Fieldset */
 fieldset {
     background-color: rgba(27, 38, 59, 0.7);
     backdrop-filter: blur(12px);
@@ -109,7 +106,7 @@ fieldset {
     border-radius: 20px;
     padding: 2rem;
     margin: 0;
-    display: none; /* Nascosto di default, gestito da JS */
+    display: none;
     animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
 }
@@ -120,33 +117,31 @@ fieldset {
 }
 
 fieldset.active {
-    display: block; /* Mostra lo step attivo */
+    display: block;
 }
 
-/* Contenitore per i pulsanti di scelta */
+/* Contenitore pulsanti */
 .choice-button-container {
     display: flex;
     flex-wrap: wrap;
-    gap: 1.5rem; /* Uso 'rem' per rendere lo spazio scalabile */
-    justify-content: center; /* Centra i pulsanti */
+    gap: 1.5rem;
+    justify-content: center;
     margin-bottom: 20px;
 }
 
-/* Stile generale dei pulsanti */
+/* Pulsanti */
 .choice-btn, .nav-btn, .submit-button {
     font-family: 'Fredoka One', cursive;
-    font-size: 1.8rem; /* Dimensione del font aumentata */
-    color: #415a77; /* Testo azzurro/blu */
-    background: #f9c74f; /* Giallo solare, come i titoli */
-    border: none; /* Rimosso il bordo dal pulsante */
-    border-radius: 15px; /* Leggermente più squadrato */
-    padding: 1rem 2rem; /* Padding aumentato */
+    font-size: 1.8rem;
+    color: #415a77;
+    background: #f9c74f;
+    border: none;
+    border-radius: 15px;
+    padding: 1rem 2rem;
     cursor: pointer;
     transition: transform 0.2s ease, box-shadow 0.2s ease, text-shadow 0.2s ease;
     font-weight: 700;
-    /* Aggiunta ombra colorata gialla */
     box-shadow: 0 5px 15px rgba(249, 199, 79, 0.3);
-    /* Aggiunta contorno bianco al testo */
     text-shadow: 
         -1px -1px 0 #fff,  
          1px -1px 0 #fff,
@@ -154,61 +149,54 @@ fieldset.active {
          1px  1px 0 #fff;
 }
 
-/* Stile per i pulsanti che contengono un'immagine */
 .choice-btn {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.5rem; /* Spazio tra testo e immagine */
+    gap: 0.5rem;
 }
 
 .choice-btn-img {
-    width: 100px; /* Larghezza fissa per l'immagine */
-    height: auto; /* Altezza automatica per mantenere le proporzioni */
-    border-radius: 10px; /* Angoli arrotondati */
-    pointer-events: none; /* L'immagine non intercetta i click */
+    width: 100px;
+    height: auto;
+    border-radius: 10px;
+    pointer-events: none;
 }
 
 .choice-btn:hover, .nav-btn:hover, .submit-button:hover {
     transform: translateY(-4px) rotate(-2deg);
-    /* Ombra colorata più intensa al passaggio del mouse */
     box-shadow: 0 10px 25px rgba(249, 199, 79, 0.5);
 }
 
-/* Pulsante di scelta attivo */
+/* Stato selezionato */
 .choice-btn.active-choice,
-/* Stile per i pulsanti-checkbox degli antipasti quando sono selezionati */
 input[type="checkbox"]:checked + label.choice-btn,
 .choice-btn.antipasto-selected {
-    background: #43aa8b; /* Verde quando selezionato */
+    background: #43aa8b;
     color: #fff;
     transform: translateY(-2px);
     box-shadow: 0 6px 15px rgba(67, 170, 139, 0.4);
-    /* Rimuove il contorno bianco dal testo quando il pulsante è attivo */
     text-shadow: none;
 }
 
-/* --- Stili specifici per la checklist degli antipasti --- */
-
-/* Stile per il wrapper di aggiunta nella checklist */
+/* Checklist antipasti */
 fieldset[data-step-name="antipasto-choice"] .add-item-wrapper {
-    margin-top: 10px; /* Piccolo spazio sopra */
+    margin-top: 10px;
     display: flex;
     align-items: center;
     width: 100%;
 }
 
-/* Stile per il pulsante "Aggiungi opzione" nella checklist */
 fieldset[data-step-name="antipasto-choice"] .show-add-form-btn {
     background: none;
     padding: 0;
     font-size: 1.5rem;
-    color: #f9c74f; /* Giallo per farlo risaltare */
+    color: #f9c74f;
     text-align: left;
     justify-content: flex-start;
 }
 
-/* Pulsanti di navigazione (indietro/avanti) */
+/* Navigazione */
 .navigation-buttons {
     display: flex;
     justify-content: space-between;
@@ -222,7 +210,7 @@ fieldset[data-step-name="antipasto-choice"] .show-add-form-btn {
     color: #fff;
 }
 
-/* Contenitori per aggiungere nuovi elementi */
+/* Aggiunta nuovi elementi */
 .add-item-wrapper {
     margin-top: 20px;
 }
@@ -236,7 +224,7 @@ input[type="text"] {
     border: 2px solid #415a77;
     border-radius: 10px;
     text-align: center;
-    width: calc(100% - 22px); /* Per compensare il padding */
+    width: calc(100% - 22px);
     transition: all 0.3s ease;
 }
 
@@ -246,12 +234,12 @@ input[type="text"]:focus {
     box-shadow: 0 0 15px rgba(249, 65, 68, 0.4);
 }
 
-/* Nascondiamo la checkbox nativa, ma la manteniamo funzionale */
+/* Nascondo checkbox nativa */
 input[type="checkbox"] {
     display: none;
 }
 
-/* Riepilogo dell'ordine */
+/* Riepilogo */
 .summary-container ul {
     list-style-type: none;
     padding: 0;
@@ -267,14 +255,14 @@ input[type="checkbox"] {
     border-left: 4px solid #f9c74f;
 }
 
-/* Contenitore per gli avatar nel riepilogo */
+/* Avatar in movimento */
 #voter-avatars-container {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    pointer-events: none; /* Non intercetta i click */
+    pointer-events: none;
     overflow: hidden;
 }
 
@@ -292,8 +280,11 @@ input[type="checkbox"] {
 }
 
 .summary-container li .summary-img {
-    vertical-align: middle; width: 40px; height: 40px; 
-    border-radius: 5px; margin: 0 5px;
+    vertical-align: middle; 
+    width: 40px; 
+    height: 40px; 
+    border-radius: 5px; 
+    margin: 0 5px;
 }
 
 .summary-container li strong {
@@ -301,7 +292,7 @@ input[type="checkbox"] {
     margin-right: 10px;
 }
 
-/* Stili per il nuovo riepilogo */
+/* Riepilogo moderno */
 .summary-grid {
     display: grid;
     grid-template-areas: 
@@ -310,6 +301,7 @@ input[type="checkbox"] {
         "stats-button";
     gap: 30px;
 }
+
 .user-summary-box {
     grid-area: user-summary;
     display: flex;
@@ -320,23 +312,51 @@ input[type="checkbox"] {
     border-radius: 0;
     border: none;
 }
+
 .user-summary-box img {
-    width: 120px; /* Aumentata dimensione */
+    width: 120px;
     height: 120px;
     border-radius: 50%;
     border: 4px solid #f9c74f;
-    object-fit: cover; /* Assicura che l'immagine copra l'area senza distorsioni */
+    object-fit: cover;
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
+
 .user-summary-box .user-details {
     text-align: left;
 }
+
 .other-voters-box { grid-area: other-voters; }
-.voters-list { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-top: 10px; }
-.voter-avatar { text-align: center; transition: transform 0.2s; }
+
+.voters-list { 
+    display: flex; 
+    justify-content: center; 
+    gap: 15px; 
+    flex-wrap: wrap; 
+    margin-top: 10px; 
+}
+
+.voter-avatar { 
+    text-align: center; 
+    transition: transform 0.2s; 
+}
+
 .voter-avatar:hover { transform: scale(1.05); }
-.voter-avatar img { width: 80px; height: 80px; border-radius: 50%; border: 3px solid #4d908e; object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-.voter-avatar p { margin: 5px 0 0; font-size: 1rem; }
+
+.voter-avatar img { 
+    width: 80px; 
+    height: 80px; 
+    border-radius: 50%; 
+    border: 3px solid #4d908e; 
+    object-fit: cover; 
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2); 
+}
+
+.voter-avatar p { 
+    margin: 5px 0 0; 
+    font-size: 1rem; 
+}
+
 .stats-button-box { 
     grid-area: stats-button;
     margin-top: 20px;
@@ -350,7 +370,7 @@ input[type="checkbox"] {
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
-    display: none; /* Gestito da JS */
+    display: none;
     z-index: 99;
 }
 
@@ -369,7 +389,7 @@ fieldset[data-modal="true"] {
     animation: fadeInPopup 0.5s ease-out forwards;
 }
 
-/* Stile specifico per il popup dei messaggi personalizzati */
+/* Popup messaggi */
 fieldset[data-step-name="custom-message-popup"] {
     background: radial-gradient(circle, #2a3b5c 0%, #1b263b 100%);
     border: 2px solid #f9c74f;
@@ -381,7 +401,6 @@ fieldset[data-step-name="custom-message-popup"] legend {
     border-bottom-color: #f94144;
 }
 
-/* Animazione di entrata e uscita per il popup */
 @keyframes fadeInPopup {
     from { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
     to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
@@ -395,6 +414,7 @@ fieldset[data-step-name="custom-message-popup"] legend {
 .fade-out {
     animation: fadeOutPopup 0.5s ease-in forwards !important;
 }
+
 .countdown-item span {
     font-family: 'Fredoka One', cursive;
     font-size: 3rem;
@@ -407,3 +427,35 @@ fieldset[data-step-name="custom-message-popup"] legend {
     color: #fff;
     margin-top: 5px;
 }
+
+/* 📱 ADATTAMENTI MOBILE — SOLO LE COSE CHE MI HAI CHIESTO */
+@media (max-width: 600px) {
+
+    .voter-top-avatar {
+        width: 70px;
+        height: 70px;
+    }
+
+    .choice-btn-img {
+        width: 70px;
+    }
+
+    h1 {
+        font-size: 2.2rem;
+    }
+
+    .user-summary-box img {
+        width: 80px;
+        height: 80px;
+    }
+
+    .voter-avatar img {
+        width: 60px;
+        height: 60px;
+    }
+
+    .voters-top-row {
+        padding: 5px 0;
+        gap: 8px;
+    }
+    }
