@@ -1,205 +1,116 @@
-/* --- Font e base --- */
 @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Lato&display=swap');
 
 html {
-  height: 100%;
-  font-size: calc(1vw + 1vh); /* Adattabile a schermi piccoli */
+    font-size: calc(0.5vw + 0.8vh);
+    height: 100%;
 }
 
 body {
-  font-family: 'Lato', sans-serif;
-  background-color: #101729;
-  height: 100vh;
-  margin: 0;
-  overflow-x: hidden;
-  color: #fff;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  line-height: 1.5;
-  text-align: center;
+    font-family: 'Lato', sans-serif;
+    background-color: #101729;
+    margin: 0;
+    overflow-x: hidden;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    line-height: 1.5;
+    text-align: center;
+    padding: 1rem;
 }
 
-/* --- Canvas fuochi d'artificio --- */
 #fireworks-canvas {
-  display: block;
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: -1;
-  pointer-events: none;
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
 }
 
-/* --- Avatar top row --- */
-.voters-top-row {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 10px 0;
-  background-color: rgba(16, 23, 41, 0.8);
-  backdrop-filter: blur(5px);
-  z-index: 101;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.voter-top-avatar {
-  width: 80px;
-  height: 80px;
-  object-fit: cover;
-  border-radius: 8px;
-  border: none;
-  transition: transform 0.2s ease;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-}
-
-.voter-top-avatar:hover {
-  transform: scale(1.1);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.5);
-}
-
-/* --- Titoli principali --- */
 h1, h2, legend {
-  font-family: 'Fredoka One', cursive;
-  color: #f9c74f;
-  margin-bottom: 10px;
-  font-weight: 700;
+    font-family: 'Fredoka One', cursive;
+    color: #f9c74f;
+    margin-bottom: 10px;
+    font-weight: 700;
 }
 
-h1 {
-  font-size: 2.5rem;
-  text-shadow: 0 0 15px rgba(249, 199, 79, 0.5);
-  margin-bottom: 15px;
-}
+h1 { font-size: 3rem; text-shadow: 0 0 15px rgba(249,199,79,0.5); }
+legend { font-size: 1.5rem; padding-bottom: 10px; margin-bottom: 20px; }
 
-h2 {
-  font-size: 1.4rem;
-  color: #fff;
-}
-
-legend {
-  font-size: 1.6rem;
-  padding-bottom: 10px;
-  margin-bottom: 15px;
-  border-bottom: 2px solid #43aa8b;
-  width: 100%;
-  text-align: center;
-}
-
-/* --- Fieldset --- */
 fieldset {
-  background-color: rgba(27, 38, 59, 0.7);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 15px;
-  padding: 1.5rem;
-  margin: 0;
-  display: none;
-  animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    background-color: rgba(27,38,59,0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+    display: none;
+    animation: popIn 0.5s ease-out;
+    width: 100%;
+    max-width: 500px;
 }
 
-fieldset.active {
-  display: block;
-}
+fieldset.active { display: block; }
 
-@keyframes popIn {
-  from { opacity:0; transform: scale(0.9); }
-  to { opacity:1; transform: scale(1); }
-}
-
-/* --- Pulsanti di scelta --- */
 .choice-button-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  justify-content: center;
-  margin-bottom: 15px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+    margin-bottom: 1rem;
 }
 
 .choice-btn, .nav-btn, .submit-button {
-  font-family: 'Fredoka One', cursive;
-  font-size: 1.4rem;
-  color: #415a77;
-  background: #f9c74f;
-  border: none;
-  border-radius: 12px;
-  padding: 0.8rem 1.5rem;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, text-shadow 0.2s ease;
-  font-weight: 700;
-  box-shadow: 0 5px 12px rgba(249, 199, 79, 0.3);
-  text-shadow:
-    -1px -1px 0 #fff,
-    1px -1px 0 #fff,
-    -1px  1px 0 #fff,
-    1px  1px 0 #fff;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.2rem;
+    color: #415a77;
+    background: #f9c74f;
+    border: none;
+    border-radius: 12px;
+    padding: 0.8rem 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
 .choice-btn:hover, .nav-btn:hover, .submit-button:hover {
-  transform: translateY(-3px) rotate(-1deg);
-  box-shadow: 0 8px 20px rgba(249, 199, 79, 0.4);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(249,199,79,0.5);
 }
 
-.choice-btn.active-choice,
-input[type="checkbox"]:checked + label.choice-btn,
-.choice-btn.antipasto-selected {
-  background: #43aa8b;
-  color: #fff;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(67, 170, 139, 0.4);
-  text-shadow: none;
-}
+.add-item-form { display: none; margin-top: 0.5rem; }
 
-/* --- Form di aggiunta elementi --- */
 input[type="text"] {
-  font-family: 'Lato', sans-serif;
-  font-size: 1rem;
-  color: #fff;
-  background-color: #101729;
-  padding: 8px;
-  border: 2px solid #415a77;
-  border-radius: 8px;
-  text-align: center;
-  width: calc(100% - 16px);
-  transition: all 0.3s ease;
+    font-family: 'Lato', sans-serif;
+    font-size: 1rem;
+    color: #fff;
+    background-color: #101729;
+    padding: 0.5rem;
+    border: 2px solid #415a77;
+    border-radius: 8px;
+    width: 100%;
+    transition: all 0.3s ease;
 }
 
 input[type="text"]:focus {
-  outline: none;
-  border-color: #f94144;
-  box-shadow: 0 0 10px rgba(249, 65, 68, 0.4);
+    outline: none;
+    border-color: #f94144;
+    box-shadow: 0 0 10px rgba(249,65,68,0.4);
 }
 
-/* --- Responsive --- */
-@media screen and (max-width: 768px) {
-  h1 { font-size: 2rem; }
-  h2 { font-size: 1.2rem; }
-  legend { font-size: 1.4rem; }
+@keyframes popIn { from {opacity:0; transform: scale(0.9);} to {opacity:1; transform: scale(1);} }
 
-  .choice-btn, .nav-btn, .submit-button {
-    font-size: 1.2rem;
-    padding: 0.6rem 1.2rem;
-  }
-
-  .voter-top-avatar { width: 60px; height: 60px; }
-  .user-summary-box img { width: 80px; height: 80px; }
-  .voter-avatar img { width: 50px; height: 50px; }
-
-  #fireworks-canvas { width: 100%; height: 100%; }
-}
-
-@media screen and (max-width: 480px) {
-  html { font-size: calc(1.5vw + 1vh); }
-  .choice-button-container { gap: 0.8rem; }
-  .choice-btn, .nav-btn, .submit-button { font-size: 1rem; padding: 0.5rem 1rem; }
-  h1 { font-size: 1.8rem; }
-  h2 { font-size: 1rem; }
-  legend { font-size: 1.2rem; }
+/* Media queries per cellulari */
+@media (max-width: 768px) {
+    html { font-size: calc(1vw + 1vh); }
+    h1 { font-size: 2rem; }
+    legend { font-size: 1.2rem; }
+    .choice-btn, .nav-btn, .submit-button {
+        font-size: 1rem;
+        padding: 0.6rem 1rem;
+        width: 100%;
+    }
+    fieldset { padding: 1rem; }
+    .choice-button-container { flex-direction: column; gap: 0.8rem; }
 }
