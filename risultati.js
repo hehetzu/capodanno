@@ -118,8 +118,13 @@ const showVoterAvatars = async () => {
         const snapshot = await get(ordersRef);
         const voterNames = new Set();
         if (snapshot.exists()) Object.values(snapshot.val()).forEach(order => { if(order.userName) voterNames.add(order.userName); });
+        
+        // Convertiamo il Set in un Array per poterlo ciclare correttamente
+        const votersArray = Array.from(voterNames);
 
-        voterNames.forEach(name => {
+        // Cicliamo sull'array di nomi
+        for (const name of votersArray) {
+            // Ora 'name' è una stringa valida (es. "Emanuele")
             const paths = getPhotoForUser(name);
 
             const img = document.createElement('img');
@@ -149,7 +154,7 @@ const showVoterAvatars = async () => {
                     animateAvatar(img, contentRect);
                 });
             };
-        });
+        }
     } catch (error) {
         console.error("Errore caricamento votanti:", error);
     }
