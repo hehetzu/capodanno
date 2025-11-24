@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MENU</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap');
+  body {
+    margin: 0;
+    height: 100vh;
+    overflow: hidden;
+    background: linear-gradient(135deg, #ef476f, #ffd166);
+    position: relative;
+    font-family: 'Luckiest Guy', cursive, sans-serif;
+    color: white;
+  }
+
+  #manoGifContainer {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(255,255,255,0.2);
+    padding: 10px;
+    border-radius: 20px;
+    z-index: 2;
+  }
+
+  #manoGif {
+    max-width: 300px;
+    display: block;
+  }
+
+  .ban, .warn {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: float linear infinite;
+  }
+
+  .ban {
+    width: 50px; height: 50px;
+    border: 5px solid red; border-radius: 50%;
+    background-color: white;
+  }
+
+  .ban::after {
+    content: "";
+    width: 5px; height: 140%;
+    background-color: red;
+    transform: rotate(45deg);
+    display: block;
+  }
+
+  .warn {
+    width: 50px; height: 50px;
+    background-color: yellow;
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    font-weight: bold; color: black; font-size: 30px;
+  }
+
+  @keyframes float {
+    0% { transform: translate(0,0) rotate(0deg); }
+    50% { transform: translate(var(--dx), var(--dy)) rotate(180deg); }
+    100% { transform: translate(0,0) rotate(360deg); }
+  }
+
+  #message {
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 30px;       /* più piccolo */
+    text-align: center;
+    z-index: 3;
+    opacity: 0;
+    transition: opacity 0.5s;
+    color: white;          /* testo bianco pieno */
+    background: #0074D9;
+    font-weight: bold;
+    text-shadow: none;     /* nessun contorno */
+    border-radius: 0.3em;
+    padding: 0.3em 0.7em;
+  }
+
+  #prankBtn {
+    display: none;
+    padding: 15px 25px;
+    font-size: 20px;
+    font-family: 'Luckiest Guy', cursive, sans-serif;
+    cursor: pointer;
+    background-color: #ffd166; /* Sfondo giallo per leggibilità */
+    border: 3px solid #000;
+    border-radius: 8px;
+    color: #000; /* Testo nero */
+    position: absolute;
+    z-index: 3;
+    transition: transform 0.2s;
+  }
+
+  #prankBtn:hover {
+    transform: scale(1.1);
+  }
+
+  /* Unused responsive styles removed for clarity */
+</style>
+</head>
+<body>
+
+<div id="manoGifContainer">
+  <img id="manoGif" src="mano-no.gif" alt="Mano che dice NO">
+</div>
+<div id="message"></div>
+<button id="prankBtn">TORNA INDIETRO</button>
+
+<div class="lampeggia">Non ti vogliamo</div>
+
+<style>
+.lampeggia {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  font-size: 5em;
+  color: #0074D9;
+  
+  font-weight: bold;
+  text-align: center;
+  margin: 0;
+  padding: 20px 0 0 0;
+  z-index: 9999;
+  pointer-events: none;
+  animation: lampeggia 1s infinite;
+  /* Aggiunto contorno nero per migliorare la leggibilità */
+  text-shadow: -2px -2px 0 #000,  
+                2px -2px 0 #000,
+               -2px  2px 0 #000,
+                2px  2px 0 #000;
+}
+@keyframes lampeggia {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+</style>
+
+<script>
+  // Funzione per creare cartelli
+  function createSigns(count, type) {
+    for (let i = 0; i < count; i++) {
+      const div = document.createElement('div');
+      div.className = type;
+      div.style.top = Math.random() * 100 + "%";
+      div.style.left = Math.random() * 100 + "%";
+      div.style.setProperty('--dx', (Math.random() * 50 - 25) + "px");
+      div.style.setProperty('--dy', (Math.random() * 50 - 25) + "px");
+      div.style.animationDuration = (Math.random() * 5 + 5) + "s"; 
+      if(type === 'warn') div.textContent = '!';
+      document.body.appendChild(div);
+    }
+  }
+
+  createSigns(20, 'ban');
+  createSigns(20, 'warn');
+
+  const btn = document.getElementById('prankBtn');
+  const message = document.getElementById('message');
+  let clickCount = 0;
+
+  function moveButtonRandomly() {
+    const x = Math.random() * (window.innerWidth - btn.offsetWidth);
+    const y = Math.random() * (window.innerHeight - btn.offsetHeight);
+    btn.style.left = x + "px";
+    btn.style.top = y + "px";
+  }
+
+  function showMessage(text) {
+    message.textContent = text;
+    message.style.opacity = 1;
+    setTimeout(() => {
+      message.style.opacity = 0;
+    }, 1000);
+  }
+
+  // Mostra il pulsante dopo 10 secondi
+  setTimeout(() => {
+    btn.style.display = 'inline-block';
+    moveButtonRandomly();
+  }, 10000);
+  
+  const messages = ['FREGATA!', 'FREGATA DI NUOVO!', 'OK, BASTA... FORSE'];
+
+  btn.addEventListener('click', () => {
+    // If there are still messages to show, continue the prank
+    if(clickCount < messages.length) {
+      showMessage(messages[clickCount]);
+      btn.textContent = 'DAI, RICLICCA  SU !';
+      moveButtonRandomly();
+      clickCount++;
+    } else {
+      window.location.href = 'menu.html';
+    }
+  });
+</script>
+</body>
+</html>

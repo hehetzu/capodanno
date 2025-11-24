@@ -1,0 +1,14 @@
+# File di configurazione con dati sensibili (NON CARICARE MAI!)
+.env
+
+# Dipendenze di Node.js (vengono reinstallate con 'npm install')
+node_modules/
+
+# File di log generati da npm
+npm-debug.log*
+
+# File di sistema di macOS
+.DS_Store
+
+# File di sistema di Windows
+Thumbs.db

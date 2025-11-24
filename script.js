@@ -1,0 +1,845 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+import { getDatabase, ref, get, set, push, runTransaction } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+
+
+document.addEventListener('DOMContentLoaded', async () => {
+    // --- INIZIO SCRIPT FUOCHI D'ARTIFICIO SU CANVAS ---
+    const canvas = document.getElementById('fireworks-canvas');
+    const ctx = canvas.getContext('2d');
+    let fireworks = [];
+    let particles = [];
+
+    function setupCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    setupCanvas();
+
+    // Funzione per generare un numero casuale in un range
+    function random(min, max) {
+        return Math.random() * (max - min) + min;
+    }
+
+    // Classe per le particelle dell'esplosione
+    class Particle {
+        constructor(x, y, color, isTrail = false) {
+            this.x = x;
+            this.y = y;
+            this.color = color;
+            this.angle = random(0, Math.PI * 2);
+            // Le particelle della scia sono più lente
+            this.speed = isTrail ? random(1, 3) : random(2, 12);
+            this.friction = 0.95;
+            // La gravità ha un effetto più realistico
+            this.gravity = 0.2;
+            this.alpha = 1;
+            // Le particelle della scia svaniscono più in fretta
+            this.decay = isTrail ? random(0.04, 0.06) : random(0.01, 0.02);
+            this.shouldTwinkle = !isTrail && Math.random() > 0.7; // Alcune particelle scintillano
+        }
+
+        update() {
+            this.speed *= this.friction;
+            this.x += Math.cos(this.angle) * this.speed;
+            this.y += Math.sin(this.angle) * this.speed + this.gravity;
+            this.alpha -= this.decay;
+
+            // Effetto scintillio
+            if (this.shouldTwinkle) {
+                this.alpha = Math.max(0, this.alpha - this.decay * (Math.random() * 3));
+            }
+        }
+
+        draw() {
+            ctx.save();
+            ctx.globalAlpha = this.alpha;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, 2, 0, Math.PI * 2, false);
+            ctx.fillStyle = this.color;
+            ctx.fill();
+            ctx.restore();
+        }
+    }
+
+    // Classe per il razzo del fuoco d'artificio
+    class Firework {
+        constructor() {
+            this.x = random(canvas.width * 0.2, canvas.width * 0.8);
+            this.y = canvas.height;
+            this.targetY = random(canvas.height * 0.2, canvas.height * 0.5);
+            this.color = `hsl(${random(0, 360)}, 100%, 50%)`; // Colore casuale
+        }
+
+        update() {
+            // Sale fino al punto di esplosione
+            const distanceToTarget = this.y - this.targetY;
+            const speed = Math.max(2, distanceToTarget / 20); // Rallenta man mano che sale
+
+            if (distanceToTarget > 1) {
+                this.y -= speed;
+                // Crea particelle per la scia
+                particles.push(new Particle(this.x + random(-2, 2), this.y, 'hsl(40, 100%, 70%)', true));
+            } else {
+                // Esplode
+                const particleCount = 150; // Più particelle per un'esplosione più ricca
+                for (let i = 0; i < particleCount; i++) {
+                    particles.push(new Particle(this.x, this.y, this.color));
+                }
+                // Rimuove se stesso
+                return true;
+            }
+            return false;
+        }
+
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+            ctx.fillStyle = this.color;
+            ctx.fill();
+        }
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.1)'; // Sfondo nero con scia più lunga
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Lancia un nuovo fuoco d'artificio casualmente
+        if (random(0, 100) < 2) {
+            fireworks.push(new Firework());
+        }
+
+        fireworks = fireworks.filter(fw => !fw.update());
+        particles = particles.filter(p => p.alpha > 0);
+
+        fireworks.forEach(fw => fw.draw());
+        particles.forEach(p => { p.update(); p.draw(); });
+    }
+
+    window.addEventListener('resize', setupCanvas);
+    animate();
+    // --- FINE SCRIPT FUOCHI D'ARTIFICIO ---
+
+    // --- INIZIO CONFIGURAZIONE FIREBASE ---
+    // IMPORTANTE: Sostituisci questo oggetto con la configurazione del tuo progetto Firebase!
+    const firebaseConfig = {
+      apiKey: "AIzaSyBUY-spueXuNmiUew_83Ww3BzP2_kQ0wT0",
+      authDomain: "manu-dbc85.firebaseapp.com",
+      databaseURL: "https://manu-dbc85-default-rtdb.europe-west1.firebasedatabase.app", // IMPORTANTE: Assicurati che questo URL sia corretto!
+      projectId: "manu-dbc85",
+      storageBucket: "manu-dbc85.firebasestorage.app",
+      messagingSenderId: "1081477129666",
+      appId: "1:1081477129666:web:e483d7ab2a26e5ed5ca25b",
+      measurementId: "G-E1MNRMW7M5"
+    };
+
+    // Inizializza Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    // --- FINE CONFIGURAZIONE FIREBASE ---
+    
+    const form = document.querySelector('form');
+    const h1Title = document.querySelector('h1');
+    const summaryContainer = document.getElementById('summary');
+    const modalOverlay = document.getElementById('modal-overlay');
+    const allSteps = Array.from(form.querySelectorAll('fieldset'));
+    const mainChoiceHolder = document.getElementById('mainChoiceHolder');
+    let stepHistory = [allSteps[0]]; // Tiene traccia dei passi visitati
+
+    // Recupera i dati dell'utente e imposta un contatore per il click sulla pizza
+    const userGender = localStorage.getItem('userGender') || 'm'; // 'm' di default se non trovato
+    const userName = localStorage.getItem('userName') || 'Ospite';
+    let pizzaYesClickCount = 0;
+
+    // Mostra il pulsante di reset solo per l'utente "emanuele"
+    if (userName.toLowerCase() === 'emanuele') {
+        const adminResetBtn = document.getElementById('admin-reset-btn');
+        if (adminResetBtn) {
+            adminResetBtn.style.display = 'block'; // O 'inline-block' a seconda dello stile
+        }
+    }
+
+    // --- FUNZIONE PER CARICARE I PIATTI PERSONALIZZATI DA FIREBASE ---
+    const loadCustomDishes = async () => {
+        try {
+            const dishesRef = ref(db, 'customDishes');
+            const snapshot = await get(dishesRef);
+            if (snapshot.exists()) {
+                const dishes = snapshot.val();
+                for (const key in dishes) {
+                    addDishToDOM(dishes[key].category, dishes[key].name);
+                }
+            }
+        } catch (error) {
+            console.error("Errore nel caricamento dei piatti personalizzati:", error);
+        }
+    };
+
+    // Funzione helper per aggiungere un piatto al DOM nella categoria corretta
+    const addDishToDOM = (category, name) => {
+        let container;
+        let stepName;
+
+        switch (category) {
+            case 'antipasto':
+                stepName = 'antipasto-choice';
+                break;
+            case 'primo':
+                stepName = 'primo-choice';
+                break;
+            case 'secondo':
+                stepName = 'secondo-choice';
+                break;
+            case 'dessert':
+                stepName = 'dessert-choice';
+                break;
+            case 'pizza_flavor':
+                stepName = 'pizza-flavor';
+                break;
+            default:
+                return; // Categoria non riconosciuta
+        }
+
+        const stepElement = form.querySelector(`[data-step-name="${stepName}"]`);
+        if (!stepElement) return;
+
+        container = stepElement.querySelector('.choice-button-container');
+        if (!container) return;
+
+        if (category === 'antipasto') {
+            const newLabel = document.createElement('label');
+            newLabel.className = 'choice-btn';
+            const newCheckbox = document.createElement('input');
+            newCheckbox.type = 'checkbox';
+            newCheckbox.name = 'antipasto[]';
+            newCheckbox.value = name;
+            newLabel.appendChild(newCheckbox);
+            newLabel.append(name);
+            const addItemWrapper = container.querySelector('.add-item-wrapper');
+            container.insertBefore(newLabel, addItemWrapper);
+        } else {
+            const newButton = document.createElement('button');
+            newButton.type = 'button';
+            newButton.className = 'choice-btn';
+            newButton.dataset.choice = name;
+            newButton.textContent = name;
+            container.appendChild(newButton);
+        }
+    };
+
+    // Funzione per ottenere il percorso della foto in base al nome
+    const getPhotoForUser = (name) => {
+        const lowerCaseName = name.toLowerCase();
+        // Mappa dei nomi (in minuscolo) ai file delle foto
+        // Corretto le estensioni in .png per coerenza con risultati.js
+        const photoMap = {
+            'emanuele': 'Emanuele.png',
+            'dama': 'Dama.png',
+            'giada': 'Giada.png',
+            'giulia': 'Giulia.png',
+            'luca': 'Luca.png',
+            'marta': 'Marta.png',
+            'matteo': 'Matteo.png',
+            'rocco': 'Rocco.png',
+            'saba': 'Saba.png',
+            'anna': 'Anna.png',
+            'annachiara': 'Anna.png',
+            'anna chiara': 'Anna.png'
+        };
+        // Se il nome è nella mappa, restituisce il percorso, altrimenti usa la foto di default
+        return `photos/${photoMap[lowerCaseName] || 'Default.jpg'}`;
+    };
+
+    const showSummary = () => {
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData);
+
+        let summaryHtml = `<h2>Ecco le tue scelte, ${userName}:</h2><ul>`;
+
+        if (data.main_choice === 'pizza') {
+            summaryHtml += `<li><strong>Scelta principale:</strong> Pizza</li>`;
+            summaryHtml += `<li><strong>Tipo:</strong> ${data.pizza_location.replace('fatta_in_casa', 'Fatta in casa').replace('asporto', 'Da asporto')}</li>`;
+            if (data.pizza_location === 'fatta_in_casa') {
+                summaryHtml += `<li><strong>Gusto Pizza:</strong> ${data.pizza_flavor}</li>`;
+            }
+        } else {
+            summaryHtml += `<li><strong>Scelta principale:</strong> Menu completo</li>`;
+            const antipasti = formData.getAll('antipasto[]');
+            if (antipasti.length > 0) {
+                summaryHtml += `<li><strong>Antipasti:</strong> ${antipasti.join(', ')}</li>`;
+            }
+            if (data.primo) summaryHtml += `<li><strong>Primo:</strong> ${data.agnolotti_sauce ? `${data.primo} (${data.agnolotti_sauce})` : data.primo}</li>`;
+            if (data.secondo) {
+                let secondoText = data.secondo;
+                if (data.secondo === 'Cappello del prete al Barolo') {
+                    secondoText += data.cappello_prete_side === 'Polenta' ? ' con Polenta' : ` con ${data.arrosto_potatoes}`;
+                } else if (data.secondo === 'Arrosto con patate') {
+                    secondoText += ` con ${data.arrosto_potatoes}`;
+                }
+                summaryHtml += `<li><strong>Secondo:</strong> ${secondoText}</li>`;
+            }
+        }
+
+        if (data.dessert) summaryHtml += `<li><strong>Dolce:</strong> ${data.pannacotta_flavor ? `${data.dessert} (${data.pannacotta_flavor})` : data.dessert}</li>`;
+        summaryHtml += `<li><strong>Fuochi d'artificio:</strong> ${data.fireworks_choice === 'si' ? 'Sì' : 'No'}</li>`;
+        summaryHtml += `</ul>`;
+
+        const contentArea = summaryContainer.querySelector('.summary-content');
+        if (contentArea) contentArea.innerHTML = summaryHtml;
+
+        form.style.display = 'none';
+        summaryContainer.style.display = 'block';
+        summaryContainer.classList.add('active');
+
+    };
+
+    /**
+     * Invia una notifica a Telegram tramite un servizio backend.
+     * @param {object} orderData - L'oggetto contenente i dati dell'ordine.
+     */
+    const sendTelegramNotification = async (orderData) => {
+        // URL del tuo server personale online (es. su Render).
+        const backendUrl = 'https://server-menu-capodanno-manu.onrender.com/send-telegram-notification';
+
+        // Formatta il messaggio per Telegram
+        let message = `🎉 *Nuova Votazione da ${orderData.userName}!* 🎉\n\n`;
+
+        if (orderData.main_choice === 'pizza') {
+            message += `🍕 *Scelta Principale:* Pizza\n`;
+            const location = orderData.pizza_location === 'fatta_in_casa' ? 'Fatta in casa' : 'Da asporto';
+            message += `📍 *Tipo:* ${location}\n`;
+            if (orderData.pizza_flavor) {
+                message += `🌶️ *Gusto:* ${orderData.pizza_flavor}\n`;
+            }
+        } else {
+            message += `🍽️ *Scelta Principale:* Menù Completo\n`;
+            if (orderData.antipasto && orderData.antipasto.length > 0) {
+                message += `🧀 *Antipasti:* ${orderData.antipasto.join(', ')}\n`;
+            }
+            if (orderData.primo) message += `🍝 *Primo:* ${orderData.primo}\n`;
+            if (orderData.secondo) message += `🍖 *Secondo:* ${orderData.secondo}\n`;
+        }
+
+        if (orderData.dessert) message += `🍰 *Dolce:* ${orderData.dessert}\n`;
+        message += `🎆 *Fuochi d'artificio:* ${orderData.fireworks_choice === 'si' ? 'Sì, ci sta!' : 'No'}\n`;
+
+        try {
+            const response = await fetch(backendUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: message })
+            });
+
+            if (response.ok) {
+                console.log('Notifica Telegram inviata con successo!');
+            } else {
+                console.error('Il server ha risposto con un errore durante l\'invio della notifica Telegram.');
+            }
+        } catch (error) {
+            console.error('Errore di rete o del server durante l\'invio della notifica a Telegram:', error);
+        }
+    };
+
+    const confirmOrder = async () => {
+        try {
+            summaryContainer.style.display = 'none';
+            // Mostra un indicatore di caricamento (opzionale, ma consigliato)
+            // document.getElementById('loading-spinner').style.display = 'block';
+
+            const formData = new FormData(form);
+            const orderData = Object.fromEntries(formData.entries());
+
+            // Assicura che main_choice sia sempre valorizzato, anche se non fosse nel form
+            orderData.main_choice = mainChoiceHolder.value;
+            
+            // Aggiunge il nome dell'utente ai dati dell'ordine
+            orderData.userName = userName;
+
+            // Gestione antipasti
+            const antipasti = formData.getAll('antipasto[]');
+            if (antipasti.length > 0) {
+                orderData.antipasto = antipasti;
+            }
+            // Rimuovi la chiave vuota creata da FormData per i checkbox
+            delete orderData['antipasto[]']; 
+
+            // Se la pizza è da asporto, non c'è un gusto, quindi rimuoviamo la chiave
+            if (orderData.pizza_location === 'asporto') {
+                delete orderData.pizza_flavor;
+            }
+
+            // Unisci i piatti condizionali
+            if (orderData.agnolotti_sauce) {
+                orderData.primo = `${orderData.primo} (${orderData.agnolotti_sauce})`;
+                delete orderData.agnolotti_sauce;
+            }
+            if (orderData.arrosto_potatoes) {
+                orderData.secondo = `${orderData.secondo} (${orderData.arrosto_potatoes})`;
+                delete orderData.arrosto_potatoes;
+            }
+            if (orderData.secondo === 'Cappello del prete al Barolo') {
+                if (orderData.cappello_prete_side === 'Polenta') {
+                    orderData.secondo = `${orderData.secondo} (con Polenta)`;
+                } else if (orderData.cappello_prete_side === 'Patate') {
+                    orderData.secondo = `${orderData.secondo} (con ${orderData.arrosto_potatoes})`;
+                }
+            }
+            if (orderData.pannacotta_flavor) {
+                orderData.dessert = `${orderData.dessert} (${orderData.pannacotta_flavor})`;
+                delete orderData.pannacotta_flavor;
+            }
+
+            // Invia la notifica a Telegram (non blocca il resto del processo)
+            sendTelegramNotification(orderData);
+
+            // Aggiorna le statistiche
+            const statsRef = ref(db, 'stats');
+            await runTransaction(statsRef, (currentStats) => {
+                if (!currentStats) {
+                    currentStats = {};
+                }
+                const increment = (category, item) => {
+                    if (!currentStats[category]) currentStats[category] = {};
+                    if (!currentStats[category][item]) currentStats[category][item] = 0;
+                    currentStats[category][item]++;
+                };
+                for (const key in orderData) {
+                    const value = orderData[key];
+                    if (Array.isArray(value)) {
+                        value.forEach(item => increment('antipasto', item));
+                    } else if (key !== 'main_choice' && value) { // Non contare la scelta principale e i valori vuoti
+                        if (value) increment(key, value);
+                    }
+                }
+                // Incrementa la scelta principale separatamente
+                if (orderData.main_choice) {
+                    increment('main_choice', orderData.main_choice);
+                }
+                return currentStats;
+            });
+
+            // Salva il singolo ordine
+            const newOrderRef = push(ref(db, 'orders'));
+            await set(newOrderRef, orderData);
+            console.log("Ordine salvato con ID: ", newOrderRef.key);
+
+            // Reindirizza alla pagina dei risultati
+            window.location.href = 'risultati.html';
+        } catch (error) {
+            console.error("Errore durante la conferma dell'ordine: ", error);
+            alert("Si è verificato un errore nel salvataggio. Riprova.");
+            // Nascondi l'indicatore di caricamento in caso di errore
+            // document.getElementById('loading-spinner').style.display = 'none'; // Rimuovi il commento se hai uno spinner
+        }
+    };
+
+    const resetAllData = async () => {
+        if (confirm("Sei assolutamente sicuro di voler cancellare TUTTI i voti, i piatti personalizzati e le statistiche? L'azione è irreversibile.")) {
+            try {
+                console.log("Inizio reset totale...");
+                // Cancella tutti gli ordini
+                await set(ref(db, 'orders'), null);
+                // Cancella tutti i piatti personalizzati
+                await set(ref(db, 'customDishes'), null);
+                // Cancella tutte le statistiche
+                await set(ref(db, 'stats'), null);
+
+                alert("Dati cancellati con successo! La pagina verrà ricaricata.");
+                window.location.reload();
+            } catch (error) {
+                console.error("Errore durante il reset totale:", error);
+                alert("Si è verificato un errore durante la cancellazione dei dati.");
+            }
+        }
+    };
+
+    const editChoices = () => {
+        // Nascondi il riepilogo e mostra di nuovo il form
+        summaryContainer.style.display = 'none';
+        summaryContainer.classList.remove('active');
+        form.style.display = 'block';
+
+        // Mostra l'ultimo step visitato prima del riepilogo
+        const lastStep = stepHistory[stepHistory.length - 1];
+        showStep(lastStep);
+    };
+
+
+    const showStep = (step) => {
+        const isModal = step && step.dataset.modal === 'true';
+
+        // Nascondi tutti i passi non modali
+        allSteps.forEach(s => {
+            if (s.dataset.modal !== 'true') s.classList.remove('active');
+        });
+
+        if (!isModal) { // Se il nuovo passo non è un modale, nascondi anche i modali e l'overlay
+            allSteps.forEach(s => s.classList.remove('active'));
+            document.body.classList.remove('modal-active');
+        } else {
+            // Se è un modale, attiva l'overlay
+            document.body.classList.add('modal-active');
+        }
+
+        if (step) {
+            // Se stiamo aprendo un modale, assicuriamoci che tutti gli altri modali siano chiusi
+            if (isModal) {
+                allSteps.forEach(s => { if (s.dataset.modal === 'true' && s !== step) s.classList.remove('active'); });
+            }
+            step.classList.add('active');
+        }
+    };
+
+    // --- GESTIONE DEGLI EVENTI SUL FORM ---
+
+    /**
+     * Gestisce i click sui pulsanti di scelta che non sono nel primo step.
+     * Si occupa di salvare la scelta, aggiornare la UI e navigare al passo successivo.
+     */
+    const handleChoiceClick = (e) => {
+        if (e.target.matches('.choice-btn') && e.target.closest('[data-step-name]')) {
+            const currentStep = e.target.closest('fieldset');
+            const currentStepName = e.target.closest('fieldset').dataset.stepName;
+            const choice = e.target.dataset.choice;
+
+            // Salva la scelta nell'input nascosto del fieldset
+            const choiceHolder = currentStep.querySelector('.choice-holder');
+            if (choiceHolder) {
+                choiceHolder.value = choice;
+            }
+
+            // Gestione della selezione visiva
+            if (currentStepName === 'antipasto-choice') {
+                // Per gli antipasti (checkbox), gestiamo il toggle della classe per il feedback visivo.
+                const label = e.target.closest('label.choice-btn');
+                if (label) {
+                    label.classList.toggle('antipasto-selected');
+                }
+            } else {
+                // Per le altre sezioni (radio-like), deseleziona gli altri e seleziona quello cliccato.
+                e.target.closest('fieldset').querySelectorAll('.choice-btn').forEach(btn => btn.classList.remove('active-choice'));
+                e.target.classList.add('active-choice');
+            }
+
+            // Logica di navigazione automatica
+            const nextStepName = e.target.dataset.nextStep;
+            let nextStep = null;
+
+            if (nextStepName) {
+                nextStep = form.querySelector(`[data-step-name="${nextStepName}"]`);
+            }
+
+             if (nextStep) {
+                 stepHistory.push(nextStep);
+                 showStep(nextStep);
+             }
+        }
+    };
+
+    const handleFireworksClick = (e) => {
+         if (e.target.matches('.choice-btn') && e.target.closest('[data-step-name="fireworks-choice"]')) {
+            const choice = e.target.dataset.choice;
+            form.querySelector('input[name="fireworks_choice"]').value = choice;
+
+            if (choice === 'no') {
+                const mainChoice = mainChoiceHolder.value;
+                const popup = form.querySelector('[data-step-name="custom-message-popup"]');
+                const messageP = popup.querySelector('#custom-popup-message');
+                const iconSpan = popup.querySelector('#custom-popup-icon');
+
+                // Imposta il messaggio in base alla scelta principale
+                if (mainChoice === 'pizza') {
+                    messageP.innerHTML = `${userName}, sempre tu! 😂`;
+                    iconSpan.textContent = '🤦';
+                } else {
+                    messageP.innerHTML = '😢😢😢';
+                    iconSpan.textContent = '😭';
+                }
+
+                // Mostra il popup e nascondi il pulsante "Ok"
+                popup.querySelector('.navigation-buttons').style.display = 'none';
+                popup.classList.remove('fade-out'); // Rimuovi animazione di uscita se presente
+                showStep(popup);
+
+                // Dopo 4 secondi, nascondi il popup e vai al riepilogo
+                setTimeout(() => {
+                    popup.classList.add('fade-out'); // Avvia animazione di uscita
+                    setTimeout(() => {
+                        showSummary();
+                        document.body.classList.remove('modal-active'); // Rimuovi lo stato modale
+                        popup.querySelector('.navigation-buttons').style.display = 'flex'; // Ripristina il pulsante
+                    }, 500); // Attendi la fine dell'animazione
+                }, 3500); // Impostato a 3.5s per avviare l'animazione prima dei 4s
+            } else { // Se la scelta è "sì", vai direttamente al riepilogo
+                showSummary();
+            }
+        }
+    };
+
+    const handlePopupClose = (e) => {
+         // Gestione chiusura popup personalizzato
+        if (e.target.matches('#close-popup-btn')) {
+            const nextStepName = e.target.dataset.nextStep;
+            if (nextStepName) {
+                // Se il pulsante ha un 'data-next-step', vai a quel passo
+                mainChoiceHolder.value = 'dolce'; // Imposta la scelta
+                const nextStep = form.querySelector(`[data-step-name="${nextStepName}"]`);
+                stepHistory.push(nextStep);
+                showStep(nextStep);
+            } else {
+                // Ri-mostra il pulsante se era stato nascosto
+                e.target.closest('.navigation-buttons').style.display = 'flex';
+                // Comportamento di default: vai al riepilogo
+                showSummary();
+            }
+        }
+    };
+
+    const handleNextButtonClick = (e) => {
+        if (e.target.matches('.next-btn')) {
+            const currentStep = e.target.closest('fieldset');
+            const currentStepName = currentStep.dataset.stepName;
+
+            // Logica specifica per il pulsante "Avanti" degli antipasti
+            if (currentStepName === 'antipasto-choice') {
+                const checkedInputs = currentStep.querySelectorAll('input[type="checkbox"]:checked');
+                if (checkedInputs.length === 0) {
+                    alert('Ehi, scegli almeno un antipasto prima di andare avanti!');
+                    return;
+                }
+                const nextStep = form.querySelector('[data-step-name="primo-choice"]');
+                if (nextStep) {
+                    stepHistory.push(nextStep);
+                    showStep(nextStep);
+                }
+            }
+        }
+    };
+
+    const handlePrevButtonClick = (e) => {
+        if (e.target.matches('.prev-btn')) {
+            if (stepHistory.length > 1) {
+                let prevStep;
+                // Continua a tornare indietro finché non troviamo un passo che NON è un modale
+                do {
+                    stepHistory.pop(); // Rimuove il passo corrente (o il modale)
+                    prevStep = stepHistory[stepHistory.length - 1];
+                } while (stepHistory.length > 1 && prevStep.dataset.modal === 'true');
+
+                // Se si torna al primo passo, resetta lo scherzo della pizza.
+                if (prevStep === allSteps[0]) {
+                    pizzaYesClickCount = 0;
+                    // Trova il pulsante "Sì" nel primo step e ripristina il testo
+                    const pizzaButton = prevStep.querySelector('[data-choice="pizza"]');
+                    if (pizzaButton) {
+                        pizzaButton.textContent = 'Sì 👍';
+                    }
+                }
+
+                // Nascondi il passo corrente (che potrebbe essere un modale)
+                const currentStep = e.target.closest('fieldset');
+                currentStep.classList.remove('active');
+
+                // Se il passo precedente non era un modale, nascondi l'overlay
+                if (!prevStep.dataset.modal) {
+                    document.body.classList.remove('modal-active');
+                }
+                showStep(prevStep);
+            }
+        }
+    };
+
+    const handleFirstStepChoice = (e) => {
+        const currentStep = e.target.closest('fieldset');
+        if (e.target.matches('.choice-btn') && currentStep && currentStep === allSteps[0]) {
+            const choice = e.target.dataset.choice;
+
+            if (choice === 'pizza') {
+                pizzaYesClickCount++;
+                const pizzaButton = e.target;
+                let nextStep = null;
+
+                switch (pizzaYesClickCount) {
+                    case 1: pizzaButton.textContent = userGender === 'f' ? 'Sicura? 🤔' : 'Sicuro? 🤔'; break;
+                    case 2: pizzaButton.textContent = userGender === 'f' ? 'Sicurissima?? 🤨' : 'Sicurissimo?? 🤨'; break;
+                    case 3: pizzaButton.textContent = userGender === 'f' ? `Dai ${userName}, fai la seria! 😂` : `Dai ${userName}, fai il serio! 😂`; break;
+                    default:
+                        mainChoiceHolder.value = 'pizza';
+                        nextStep = form.querySelector('[data-step-name="pizza-location"]');
+                        stepHistory.push(nextStep);
+                        showStep(nextStep);
+                        break;
+                }
+            } else if (choice === 'dolce') {
+                if (pizzaYesClickCount > 0) {
+                    const popup = form.querySelector('[data-step-name="custom-message-popup"]');
+                    const messageP = popup.querySelector('#custom-popup-message');
+                    const iconSpan = popup.querySelector('#custom-popup-icon');
+                    messageP.innerHTML = userGender === 'f' ? 'ohh brava' : 'oh.. bravo';
+                    iconSpan.textContent = '😉';
+                    popup.querySelector('.navigation-buttons').style.display = 'none';
+                    popup.classList.remove('fade-out');
+                    showStep(popup);
+                    setTimeout(() => {
+                        popup.classList.add('fade-out');
+                        setTimeout(() => {
+                            mainChoiceHolder.value = 'dolce';
+                            const nextStep = form.querySelector('[data-step-name="antipasto-choice"]');
+                            stepHistory.push(nextStep);
+                            showStep(nextStep);
+                            popup.querySelector('.navigation-buttons').style.display = 'flex';
+                        }, 500);
+                    }, 3500);
+                } else {
+                    mainChoiceHolder.value = 'dolce';
+                    const nextStep = form.querySelector('[data-step-name="antipasto-choice"]');
+                    stepHistory.push(nextStep);
+                    showStep(nextStep);
+                }
+            }
+        }
+    };
+
+    const handleAddItem = (e) => {
+        if (e.target.matches('.show-add-form-btn')) {
+            const wrapper = e.target.closest('.add-item-wrapper');
+            const form = wrapper.querySelector('.add-item-form');
+            const input = form.querySelector('.new-item-input');
+
+            e.target.style.display = 'none'; // Nasconde il pulsante "Aggiungi opzione"
+            form.style.display = 'flex'; // Mostra il form di inserimento
+            input.focus(); // Mette il focus sull'input di testo
+        }
+        if (e.target.matches('#add-flavor-btn, .add-item-btn')) {
+            const input = e.target.previousElementSibling;
+            const newItemText = input.value.trim();
+
+            if (newItemText === '') {
+                alert('Scrivi qualcosa se vuoi aggiungerlo!');
+                return;
+            }
+
+            const currentStep = e.target.closest('fieldset');
+            // Trova il primo radio button per ottenere il 'name'
+            const isAntipastoSection = currentStep.dataset.stepName === 'antipasto-choice';
+            const listContainer = currentStep.querySelector('.choice-button-container');
+
+            if (isAntipastoSection) { // Logica per aggiungere checkbox (Antipasti)
+                const checkboxGroup = currentStep.querySelector('input[type="checkbox"]');
+                const checkboxName = checkboxGroup ? checkboxGroup.name : 'antipasto[]';
+                
+                // Salva il nuovo piatto su Firebase
+                const newDishRef = push(ref(db, 'customDishes'));
+                set(newDishRef, {
+                    category: 'antipasto',
+                    name: newItemText
+                }).then(docRef => {
+                    console.log("Antipasto personalizzato salvato con ID: ", docRef.id);
+                }).catch(error => {
+                    console.error("Errore salvataggio antipasto: ", error);
+                });
+
+                const newLabel = document.createElement('label');
+                newLabel.className = 'choice-btn';
+                
+                const newCheckbox = document.createElement('input');
+                newCheckbox.type = 'checkbox';
+                newCheckbox.name = checkboxName;
+                newCheckbox.value = newItemText;
+                newLabel.appendChild(newCheckbox);
+                newLabel.append(newItemText); // Aggiunge il testo dopo la checkbox
+
+                // Inserisce il nuovo antipasto prima del blocco "Aggiungi opzione"
+                const addItemWrapper = listContainer.querySelector('.add-item-wrapper');
+                listContainer.insertBefore(newLabel, addItemWrapper);
+            } else if (listContainer) { // Logica per aggiungere bottoni per tutte le altre sezioni
+                const categoryMap = {
+                    'pizza-flavor': 'pizza_flavor',
+                    'primo-choice': 'primo',
+                    'secondo-choice': 'secondo',
+                    'dessert-choice': 'dessert'
+                };
+                const category = categoryMap[currentStep.dataset.stepName];
+
+                if (category) {
+                    // Salva il nuovo piatto su Firebase
+                    const newDishRef = push(ref(db, 'customDishes'));
+                    set(newDishRef, {
+                        category: category,
+                        name: newItemText
+                    }).then(docRef => {
+                        console.log(`Piatto personalizzato (${category}) salvato con ID: `, docRef.id);
+                    }).catch(error => {
+                        console.error(`Errore salvataggio ${category}: `, error);
+                    });
+                }
+
+                const newButton = document.createElement('button');
+                newButton.type = 'button';
+                newButton.className = 'choice-btn';
+                newButton.dataset.choice = newItemText;
+                newButton.textContent = newItemText;
+                listContainer.appendChild(newButton);
+                // Nota: i nuovi pulsanti non avranno data-next-step. La navigazione si fermerà qui.
+            }
+
+            input.value = '';
+
+            // Nascondi il form di aggiunta e fai riapparire il pulsante "Aggiungi opzione"
+            const wrapper = e.target.closest('.add-item-wrapper'); // Correzione: assicurati che wrapper sia definito
+            if (wrapper) {
+                const addItemForm = wrapper.querySelector('.add-item-form');
+                const showAddFormBtn = wrapper.querySelector('.show-add-form-btn');
+                addItemForm.style.display = 'none';
+                showAddFormBtn.style.display = 'block'; // O 'flex' a seconda dello stile, 'block' va bene qui
+            }
+        }
+    };
+
+    // Listener principale che delega alle funzioni specifiche
+    form.addEventListener('click', (e) => {
+        handleFirstStepChoice(e);
+        handleChoiceClick(e);
+        handleFireworksClick(e);
+        handlePopupClose(e);
+        handleNextButtonClick(e);
+        handlePrevButtonClick(e);
+        handleAddItem(e);
+    });
+
+
+
+
+    // Gestione della pressione del tasto "Invio" nei campi di testo per aggiungere opzioni
+    form.addEventListener('keydown', (e) => { 
+        // Controlla se il tasto premuto è "Invio" e se l'evento proviene da un campo di input per aggiungere un nuovo elemento
+        if (e.key === 'Enter' && e.target.matches('.new-item-input')) {
+            e.preventDefault(); // Impedisce il comportamento predefinito del form (che potrebbe essere l'invio)
+
+            // Trova il pulsante "Aggiungi" associato a questo input e simula un click
+            const addButton = e.target.nextElementSibling;
+            if (addButton && addButton.matches('.add-item-btn')) {
+                addButton.click();
+            }
+        }
+    });
+
+    // Gestione dei pulsanti fuori dal form (nel riepilogo)
+    document.addEventListener('click', (e) => {
+        if (e.target.matches('#edit-choices-btn')) {
+            editChoices();
+        }
+        if (e.target.matches('#confirm-order-btn')) {
+            confirmOrder();
+        }
+        if (e.target.matches('#reset-all-btn')) {
+            resetAllData();
+        }
+        if (e.target.matches('#admin-reset-btn')) {
+            resetAllData();
+        }
+    });
+
+    // Carica i piatti personalizzati all'avvio
+    await loadCustomDishes();
+})

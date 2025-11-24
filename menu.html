@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scelta Menu</title>
+    <!-- Collegamento al foglio di stile esterno -->
+    <!-- Inclusione della libreria Chart.js per i grafici -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Canvas per l'animazione dei fuochi d'artificio -->
+    <canvas id="fireworks-canvas"></canvas>
+
+    <h1 style="margin-bottom: 20px;">Menu di Capodanno 🥳</h1>
+
+    <!-- Pulsante di reset per l'admin, nascosto di default -->
+    <button type="button" id="admin-reset-btn" class="nav-btn" style="display: none; position: absolute; top: 20px; right: 20px; font-size: 0.8em; padding: 8px 12px;">Resetta 🗑️</button>
+
+    <!-- Sfondo per i popup modali -->
+    <div id="modal-overlay"></div>
+
+    <form>
+        <!-- Step 1: Scelta Pizza/Dolce -->
+        <fieldset class="active">
+            <legend>Pizza? 🍕</legend>
+            <!-- Pulsanti di scelta -->
+            <div class="choice-button-container">
+                <button type="button" class="choice-btn" data-choice="pizza">Sì 👍</button>
+                <button type="button" class="choice-btn" data-choice="dolce">No 👎</button>
+            </div>
+        </fieldset>
+
+        <!-- Step 2a: Pizza - Luogo -->
+        <fieldset data-step-name="pizza-location">
+            <legend>Come la prepariamo? 👨‍🍳</legend>
+            <input type="hidden" class="choice-holder" name="pizza_location">
+            <div class="choice-button-container">
+                <button type="button" class="choice-btn" data-choice="fatta_in_casa" data-next-step="pizza-flavor">Fatta in casa</button>
+                <button type="button" class="choice-btn" data-choice="asporto" data-next-step="dessert-choice">Da asporto</button>
+            </div>
+            <div class="navigation-buttons">
+                <button type="button" class="nav-btn prev-btn">⬅️ Indietro</button>
+            </div>
+        </fieldset>
+        
+        <!-- Step 3a: Pizza - Gusto -->
+        <fieldset data-step-name="pizza-flavor">
+            <legend>Che gusto ti ispira? 🤔</legend>
+            <input type="hidden" class="choice-holder" name="pizza_flavor">
+            <div class="choice-button-container" id="pizza-flavors-list">
+                <button type="button" class="choice-btn" data-choice="Margherita" data-next-step="dessert-choice">Margherita</button>
+                <button type="button" class="choice-btn" data-choice="Diavola" data-next-step="dessert-choice">Diavola</button>
+            </div>
+            
+            <div class="add-item-wrapper">
+                <button type="button" class="show-add-form-btn nav-btn">Aggiungi opzione ✨</button>
+                <div class="add-item-form" style="display: none;">
+                    <input type="text" id="new-flavor-input" class="new-item-input" placeholder="Altro gusto...">
+                    <button type="button" id="add-flavor-btn" class="nav-btn add-item-btn">Aggiungi!</button>
+                </div>
+            </div>
+
+            <div class="navigation-buttons">
+                <button type="button" class="nav-btn prev-btn">⬅️ Indietro</button>
+            </div>
+        </fieldset>
+
+        <!-- Step 2b: Antipasto (se non si vuole la pizza) -->
+        <fieldset data-step-name="antipasto-choice">
+            <legend>Qualcosa per iniziare? 🍤</legend>
+            <div class="choice-button-container" id="antipasto-list">
+                <label class="choice-btn"><input type="checkbox" name="antipasto[]" value="Cocktail di gamberi"> Cocktail di gamberi</label>
+                <label class="choice-btn"><input type="checkbox" name="antipasto[]" value="Tartine burro e salmone"> Tartine burro e salmone</label>
+                <label class="choice-btn"><input type="checkbox" name="antipasto[]" value="Voulevant"> Voulevant</label>
+                <label class="choice-btn"><input type="checkbox" name="antipasto[]" value="Salumi"> Salumi</label>
+                <!-- Spostato il wrapper di aggiunta qui dentro -->
+                <div class="add-item-wrapper">
+                    <button type="button" class="show-add-form-btn nav-btn">Aggiungi opzione ✨</button>
+                    <div class="add-item-form" style="display: none;">
+                        <input type="text" class="new-item-input" placeholder="Altro antipasto...">
+                        <button type="button" class="add-item-btn nav-btn">Aggiungi!</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="navigation-buttons">
+                <button type="button" class="nav-btn prev-btn">⬅️ Indietro</button>
+                <button type="button" class="nav-btn next-btn">Avanti ➡️</button>
+            </div>
+        </fieldset>
+
+        <!-- Step 3b: Primo (se non si vuole la pizza) -->
+        <fieldset data-step-name="primo-choice">
+            <legend>Un bel primo ci sta? 🍝</legend>
+            <input type="hidden" class="choice-holder" name="primo">
+            <div class="choice-button-container">
+                <button type="button" class="choice-btn" data-choice="Agnolotti con i funghi" data-next-step="secondo-choice">Agnolotti con i funghi</button>
+                <button type="button" class="choice-btn" data-choice="Tagliatelle ai funghi" data-next-step="secondo-choice">Tagliatelle ai funghi</button>
+                <button type="button" class="choice-btn" data-choice="Agnolotti al sugo" data-next-step="agnolotti-sauce">Agnolotti al sugo</button>
+            </div>
+            
+            <div class="add-item-wrapper">
+                <button type="button" class="show-add-form-btn nav-btn">Aggiungi opzione ✨</button>
+                <div class="add-item-form" style="display: none;">
+                    <input type="text" class="new-item-input" placeholder="Altro primo...">
+                    <button type="button" class="add-item-btn nav-btn">Aggiungi!</button>
+                </div>
+            </div>
+
+            <div class="navigation-buttons">
+                <button type="button" class="nav-btn prev-btn">⬅️ Indietro</button>
+            </div>
+        </fieldset>
+
+        <!-- Step Condizionale: Tipo di sugo per agnolotti -->
+        <fieldset data-step-name="agnolotti-sauce" data-modal="true">
+            <legend>Che tipo di sugo? 🍅</legend>
+            <input type="hidden" class="choice-holder" name="agnolotti_sauce">
+            <div class="choice-button-container">
+                <button type="button" class="choice-btn" data-choice="Sugo d'arrosto" data-next-step="secondo-choice">Sugo d'arrosto</button>
+                <button type="button" class="choice-btn" data-choice="Sugo di brasato" data-next-step="secondo-choice">Sugo di brasato</button>
+            </div>
+            <div class="navigation-buttons">
+                <button type="button" class="nav-btn prev-btn">⬅️ Indietro</button>
+            </div>
+        </fieldset>
+
+        <!-- Step 4b: Secondo (se non si vuole la pizza) -->
+        <fieldset data-step-name="secondo-choice">
+            <legend>E come secondo? 🥩</legend>
+            <input type="hidden" class="choice-holder" name="secondo">
+            <div class="choice-button-container">
+                <button type="button" class="choice-btn" data-choice="Cappello del prete al Barolo" data-next-step="cappello-prete-side">Cappello del prete al Barolo</button>
+                <button type="button" class="choice-btn" data-choice="Filetto di manzo" data-next-step="dessert-choice">Filetto di manzo</button>
+                <button type="button" class="choice-btn" data-choice="Arrosto con patate" data-next-step="arrosto-potatoes">Arrosto con patate</button>
+            </div>
+            
+            <div class="add-item-wrapper">
+                <button type="button" class="show-add-form-btn nav-btn">Aggiungi opzione ✨</button>
+                <div class="add-item-form" style="display: none;">
+                    <input type="text" class="new-item-input" placeholder="Altro secondo...">
+                    <button type="button" class="add-item-btn nav-btn">Aggiungi!</button>
+                </div>
+            </div>
+
+            <div class="navigation-buttons">
+                <button type="button" class="nav-btn prev-btn">⬅️ Indietro</button>
+            </div>
+        </fieldset>
+
+        <!-- Step Condizionale: Tipo di patate per arrosto -->
+        <fieldset data-step-name="arrosto-potatoes" data-modal="true">
+            <legend>Che tipo di patate? 🥔</legend>
+            <input type="hidden" class="choice-holder" name="arrosto_potatoes">
+            <div class="choice-button-container">
+                <button type="button" class="choice-btn" data-choice="Patate arrosto" data-next-step="dessert-choice">
+                    <img src="photos/arrosto.jpg" alt="Patate arrosto" style="width:100px; height:auto; display:block; margin: 0 auto 10px;">
+                    Patate arrosto
+                </button>
+                <button type="button" class="choice-btn" data-choice="Patate duchessa" data-next-step="dessert-choice">
+                    <img src="photos/duchessa.jpg" alt="Patate duchessa" style="width:100px; height:auto; display:block; margin: 0 auto 10px;">
+                    Patate duchessa
+                </button>
+            </div>
+            <div class="navigation-buttons">
+                <button type="button" class="nav-btn prev-btn">⬅️ Indietro</button>
+            </div>
+        </fieldset>
+
+        <!-- Step Condizionale: Contorno per Cappello del prete -->
+        <fieldset data-step-name="cappello-prete-side" data-modal="true">
+            <legend>Con cosa lo accompagnamo? 🤔</legend>
+            <input type="hidden" class="choice-holder" name="cappello_prete_side">
+            <div class="choice-button-container">
+                <button type="button" class="choice-btn" data-choice="Polenta" data-next-step="dessert-choice">Polenta 🌽</button>
+                <button type="button" class="choice-btn" data-choice="Patate" data-next-step="arrosto-potatoes">Patate 🥔</button>
+            </div>
+            <div class="navigation-buttons">
+                <button type="button" class="nav-btn prev-btn">⬅️ Indietro</button>
+            </div>
+        </fieldset>
+
+        <!-- Step Penultimo: Dolce (per tutti) -->
+        <fieldset data-step-name="dessert-choice">
+            <legend>Spazio per il dolce? 🍰</legend>
+            <input type="hidden" class="choice-holder" name="dessert">
+            <div class="choice-button-container">
+                <button type="button" class="choice-btn" data-choice="Tiramisù" data-next-step="fireworks-choice">Tiramisù</button>
+                <button type="button" class="choice-btn" data-choice="Panna Cotta" data-next-step="pannacotta-flavor">Panna Cotta</button>
+                <button type="button" class="choice-btn" data-choice="Panettone" data-next-step="fireworks-choice">Panettone</button>
+                <button type="button" class="choice-btn" data-choice="Pandoro" data-next-step="fireworks-choice">Pandoro</button>
+            </div>
+            
+            <div class="add-item-wrapper">
+                <button type="button" class="show-add-form-btn nav-btn">Aggiungi opzione ✨</button>
+                <div class="add-item-form" style="display: none;">
+                    <input type="text" class="new-item-input" placeholder="Altro dolce...">
+                    <button type="button" class="add-item-btn nav-btn">Aggiungi!</button>
+                </div>
+            </div>
+
+            <div class="navigation-buttons">
+                <button type="button" class="nav-btn prev-btn">⬅️ Indietro</button>
+            </div>
+        </fieldset>
+
+        <!-- Step Condizionale: Gusto Panna Cotta -->
+        <fieldset data-step-name="pannacotta-flavor" data-modal="true">
+            <legend>Gusto Panna Cotta? 🍮</legend>
+            <input type="hidden" class="choice-holder" name="pannacotta_flavor">
+            <div class="choice-button-container">
+                <button type="button" class="choice-btn" data-choice="Alla frutta" data-next-step="fireworks-choice">Alla frutta</button>
+                <button type="button" class="choice-btn" data-choice="Al caffè" data-next-step="fireworks-choice">Al caffè</button>
+            </div>
+            <div class="navigation-buttons">
+                <button type="button" class="nav-btn prev-btn">⬅️ Indietro</button>
+            </div>
+        </fieldset>
+
+        <!-- Step Finale: Fuochi d'artificio -->
+        <fieldset data-step-name="fireworks-choice">
+            <legend>Brindisi con i botti? 🎆</legend>
+            <input type="hidden" class="choice-holder" name="fireworks_choice">
+            <div class="choice-button-container">
+                <button type="button" class="choice-btn" data-choice="si">Sì, festeggiamo! 🥂</button>
+                <button type="button" class="choice-btn" data-choice="no">No, meglio di no</button>
+            </div>
+            <div class="navigation-buttons">
+                <button type="button" class="nav-btn prev-btn">⬅️ Indietro</button>
+            </div>
+        </fieldset>
+
+        <!-- Popup per messaggio personalizzato -->
+        <fieldset data-step-name="custom-message-popup" data-modal="true">
+            <legend>Un momento... 🤔</legend>
+            <span id="custom-popup-icon" style="display: block; font-size: 5rem; margin-bottom: 1rem;"></span>
+            <p id="custom-popup-message" style="text-align: center; font-size: 1.8em; margin: 20px 0;"></p>
+            <div class="navigation-buttons" style="justify-content: center;">
+                <button type="button" id="close-popup-btn" class="nav-btn">Ok, ho capito</button>
+            </div>
+        </fieldset>
+
+        <!-- Input nascosto per memorizzare la scelta principale (pizza o menu) -->
+        <input type="hidden" id="mainChoiceHolder" name="main_choice" value="">
+    </form>
+    
+    <div id="summary" class="summary-container" style="display: none;">
+        <!-- Area dove verrà inserito il testo del riepilogo -->
+        <div class="summary-content"></div>
+        <!-- Contenitore per gli avatar sparsi dei votanti -->
+        <div id="voter-avatars-container"></div>
+        <div class="summary-buttons" style="display: flex; justify-content: center; gap: 10px; margin-top: 20px;">
+            <button type="button" id="edit-choices-btn" class="nav-btn">⬅️ Cambia Scelte</button>
+            <button type="button" id="confirm-order-btn" class="nav-btn">Conferma Ordine</button>
+        </div>
+    </div>
+
+    <!-- Importazione degli SDK di Firebase (versione modulare) -->
+    <!-- Lo script principale importa già le funzioni Firebase necessarie -->
+    <script type="module" src="script.js"></script>
+</body>
+</html>
