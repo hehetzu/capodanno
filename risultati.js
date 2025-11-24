@@ -15,16 +15,14 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// --- FOTO UTENTE ---
+// --- FOTO UTENTE AUTOMATICA ---
 const getPhotoForUser = (name) => {
-    const lower = name.toLowerCase();
-    const map = {
-        'emanuele': 'Emanuele.png','dama': 'Dama.png','damato': 'Dama.png','lorenzo': 'Dama.png',
-        'giada': 'Giada.png','giulia': 'Giulia.png','luca': 'Luca.png','lucapolla': 'Luca.png','luca polla': 'Luca.png',
-        'marta': 'Marta.png','matteo': 'Matteo.png','rocco': 'Rocco.png','saba': 'Saba.png','sabatino': 'Saba.png',
-        'alessio': 'Saba.png','anna': 'Anna.png','annachiara': 'Anna.png','anna chiara': 'Anna.png'
+    const clean = name.toLowerCase().replace(/\s+/g, '');
+    return {
+        webp: `photos/${clean}.webp`,
+        png:  `photos/${clean}.png`,
+        fallback: `photos/default.webp`
     };
-    return `photos/${map[lower] || 'Default.jpg'}`;
 };
 
 // --- LIGHTBOX ---
@@ -61,6 +59,45 @@ const getRandomPosition = (img, contentRect) => {
     return { top, left, rot };
 };
 
+// --- ANIMAZIONE FLUTTUANTE ---
+const animateAvatar = (img, contentRect) => {
+    let directionX = Math.random() < 0.5 ? 1 : -1;
+    let directionY = Math.random() < 0.5 ? 1 : -1;
+    const speed = 0.2 + Math.random() * 0.3;
+    const rotationSpeed = (Math.random() - 0.5) * 0.1;
+
+    const move = () => {
+        let top = parseFloat(img.style.top);
+        let left = parseFloat(img.style.left);
+        let rot = parseFloat(img.style.transform.replace(/[^-?\d.]/g, '')) || 0;
+
+        top += directionY * speed;
+        left += directionX * speed;
+        rot += rotationSpeed;
+
+        const iw = img.offsetWidth;
+        const ih = img.offsetHeight;
+        const maxLeft = window.innerWidth - iw;
+        const maxTop = window.innerHeight - ih;
+
+        if (top <= 0 || top >= maxTop) directionY *= -1;
+        if (left <= 0 || left >= maxLeft) directionX *= -1;
+
+        if(left + iw > contentRect.left && left < contentRect.right &&
+           top + ih > contentRect.top && top < contentRect.bottom) {
+               directionX *= -1;
+               directionY *= -1;
+        }
+
+        img.style.top = `${Math.min(Math.max(top,0), maxTop)}px`;
+        img.style.left = `${Math.min(Math.max(left,0), maxLeft)}px`;
+        img.style.transform = `rotate(${rot}deg)`;
+
+        requestAnimationFrame(move);
+    };
+    move();
+};
+
 // --- MOSTRA FOTO CON ANIMAZIONE ---
 const showVoterAvatars = async () => {
     const container = document.getElementById('background-avatars');
@@ -75,71 +112,39 @@ const showVoterAvatars = async () => {
         if (snapshot.exists()) Object.values(snapshot.val()).forEach(order => { if(order.userName) voterNames.add(order.userName); });
 
         voterNames.forEach(name => {
+            const paths = getPhotoForUser(name);
+
             const img = document.createElement('img');
-            img.src = getPhotoForUser(name);
             img.alt = `Foto di ${name}`;
             img.title = name;
             img.className = 'scattered-avatar';
+            img.loading = "lazy"; // lazy load per mobile
+
+            // fallback automatico WebP → PNG → default
+            img.src = paths.webp;
+            img.onerror = () => {
+                img.onerror = () => { img.src = paths.fallback; };
+                img.src = paths.png;
+            };
+
             img.addEventListener('click', () => openLightbox(img.src, name));
             container.appendChild(img);
 
-            requestAnimationFrame(() => {
-                const pos = getRandomPosition(img, contentRect);
-                img.style.position = 'absolute';
-                img.style.top = `${pos.top}px`;
-                img.style.left = `${pos.left}px`;
-                img.style.transform = `rotate(${pos.rot}deg)`;
+            img.onload = () => {
+                requestAnimationFrame(() => {
+                    const pos = getRandomPosition(img, contentRect);
+                    img.style.position = 'absolute';
+                    img.style.top = `${pos.top}px`;
+                    img.style.left = `${pos.left}px`;
+                    img.style.transform = `rotate(${pos.rot}deg)`;
 
-                // Animazione continua
-                animateAvatar(img, contentRect);
-            });
+                    animateAvatar(img, contentRect);
+                });
+            };
         });
     } catch (error) {
         console.error("Errore caricamento votanti:", error);
     }
-};
-
-// --- ANIMAZIONE FLUTTUANTE ---
-const animateAvatar = (img, contentRect) => {
-    let directionX = Math.random() < 0.5 ? 1 : -1;
-    let directionY = Math.random() < 0.5 ? 1 : -1;
-    const speed = 0.2 + Math.random() * 0.3; // px per frame
-    const rotationSpeed = (Math.random() - 0.5) * 0.1;
-
-    const move = () => {
-        let top = parseFloat(img.style.top);
-        let left = parseFloat(img.style.left);
-        let rot = parseFloat(img.style.transform.replace(/[^-?\d.]/g, '')) || 0;
-
-        // Aggiorna posizione
-        top += directionY * speed;
-        left += directionX * speed;
-        rot += rotationSpeed;
-
-        const iw = img.offsetWidth;
-        const ih = img.offsetHeight;
-        const maxLeft = window.innerWidth - iw;
-        const maxTop = window.innerHeight - ih;
-
-        // Inversione se raggiunge bordo
-        if (top <= 0 || top >= maxTop) directionY *= -1;
-        if (left <= 0 || left >= maxLeft) directionX *= -1;
-
-        // Evita sovrapposizione al contenuto centrale
-        const contentRectSafe = contentRect;
-        if(left + iw > contentRectSafe.left && left < contentRectSafe.right &&
-           top + ih > contentRectSafe.top && top < contentRectSafe.bottom) {
-               directionX *= -1;
-               directionY *= -1;
-        }
-
-        img.style.top = `${Math.min(Math.max(top,0), maxTop)}px`;
-        img.style.left = `${Math.min(Math.max(left,0), maxLeft)}px`;
-        img.style.transform = `rotate(${rot}deg)`;
-
-        requestAnimationFrame(move);
-    };
-    move();
 };
 
 // --- STATISTICHE ---
