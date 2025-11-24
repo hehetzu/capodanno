@@ -12,9 +12,9 @@ body {
   height: 100vh;
   overflow: hidden;
   background: linear-gradient(135deg, #ef476f, #ffd166);
-  position: relative;
   font-family: 'Luckiest Guy', cursive, sans-serif;
   color: white;
+  position: relative;
 }
 
 /* MANO AL CENTRO */
@@ -30,7 +30,7 @@ body {
 }
 
 #manoGif {
-  max-width: 250px;
+  max-width: 200px; /* ridotto per mobile */
   display: block;
 }
 
@@ -40,29 +40,28 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  transition: transform 0.5s ease-in-out;
+  transition: transform 1s ease-in-out; /* più lento */
 }
 
 .ban {
-  width: 50px; height: 50px;
-  border: 5px solid red; border-radius: 50%;
+  width: 40px; height: 40px; /* più piccolo */
+  border: 4px solid red; border-radius: 50%;
   background-color: white;
 }
 
 .ban::after {
   content: "";
-  width: 5px; height: 140%;
+  width: 4px; height: 140%;
   background-color: red;
   transform: rotate(45deg);
   display: block;
 }
 
 .warn {
-  width: 50px; height: 50px;
+  width: 40px; height: 40px; /* più piccolo */
   background-color: yellow;
   clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-  font-weight: bold; color: black; font-size: 30px;
-  justify-content: center; align-items: center;
+  font-weight: bold; color: black; font-size: 20px; /* ridotto */
 }
 
 /* TESTO LAMPEGGIANTE */
@@ -71,24 +70,19 @@ body {
   top: 0;
   left: 0;
   width: 100vw;
-  font-size: 5em;
+  font-size: 3em; /* ridotto per mobile */
   font-weight: bold;
   text-align: center;
   margin: 0;
-  padding: 20px 0 0 0;
+  padding: 10px 0;
   z-index: 9999;
   pointer-events: none;
-  animation: lampeggia 1s infinite;
+  animation: lampeggia 2s infinite; /* più lento */
   color: #0074D9;
   text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000;
 }
 
 @keyframes lampeggia { 0%,100% {opacity:1;} 50% {opacity:0;} }
-
-@media(max-width:600px){
-  .lampeggia { font-size: 3em; padding-top:10px; }
-  #manoGif { max-width: 180px; }
-}
 
 /* MESSAGGIO TEMPORANEO */
 #message {
@@ -96,7 +90,7 @@ body {
   top: 20%;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 25px;
+  font-size: 20px; /* leggermente più piccolo */
   text-align: center;
   z-index: 3;
   opacity: 0;
@@ -111,8 +105,8 @@ body {
 /* PULSANTE PRANK */
 #prankBtn {
   display: none;
-  padding: 15px 25px;
-  font-size: 20px;
+  padding: 12px 20px;
+  font-size: 18px;
   font-family: 'Luckiest Guy', cursive, sans-serif;
   cursor: pointer;
   background-color: #ffd166;
@@ -125,7 +119,6 @@ body {
 }
 
 #prankBtn:hover { transform: scale(1.1); }
-
 </style>
 </head>
 <body>
@@ -144,26 +137,27 @@ function createSigns(count, type) {
   for(let i=0;i<count;i++){
     const div = document.createElement('div');
     div.className = type;
-    div.style.top = Math.random()*90 + "%";
-    div.style.left = Math.random()*90 + "%";
+    div.style.top = Math.random()*85 + "%";
+    div.style.left = Math.random()*85 + "%";
     if(type==='warn') div.textContent='!';
     document.body.appendChild(div);
   }
 }
 
-createSigns(20,'ban');
-createSigns(20,'warn');
+// Ridotto il numero per mobile
+createSigns(10,'ban');
+createSigns(10,'warn');
 
 /* MOVIMENTO CARTELLI */
 function animateSigns(){
   const signs = document.querySelectorAll('.ban, .warn');
   signs.forEach(el=>{
-    const dx = (Math.random()*2-1)*20;
-    const dy = (Math.random()*2-1)*20;
-    el.style.transform = `translate(${dx}px, ${dy}px) rotate(${Math.random()*30-15}deg)`;
+    const dx = (Math.random()*2-1)*15; // spostamento più piccolo
+    const dy = (Math.random()*2-1)*15;
+    el.style.transform = `translate(${dx}px, ${dy}px) rotate(${Math.random()*20-10}deg)`; // rotazione minore
   });
 }
-setInterval(animateSigns, 800);
+setInterval(animateSigns, 1500); // più lento per mobile
 
 /* PULSANTE CHE SCAPPA */
 const btn = document.getElementById('prankBtn');
@@ -184,11 +178,11 @@ function showMessage(text){
   setTimeout(()=>{ message.style.opacity = 0; },1000);
 }
 
-// Mostra il pulsante dopo 10s
+// Mostra il pulsante dopo 5s (più rapido)
 setTimeout(()=>{
   btn.style.display='inline-block';
   moveButtonRandomly();
-},10000);
+},5000);
 
 btn.addEventListener('click',()=>{
   if(clickCount < messages.length){
