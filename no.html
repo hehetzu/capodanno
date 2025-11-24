@@ -110,9 +110,14 @@ body {
 <div class="lampeggia">Non ti vogliamo</div>
 
 <script>
-/* CREAZIONE EMOJI */
-const emojiList = ['🚫','⚠️']; // 🚫 = ban, ⚠️ = warn
+/* EMOJI LISTA */
+const emojiList = ['🚫','⚠️'];
 
+// Determina il numero di emoji in base al dispositivo
+const isMobile = window.innerWidth < 600;
+const emojiCount = isMobile ? 10 : 40; // poche su mobile, tante su PC
+
+/* CREAZIONE EMOJI */
 function createEmojis(count){
   for(let i=0;i<count;i++){
     const span = document.createElement('span');
@@ -124,7 +129,7 @@ function createEmojis(count){
   }
 }
 
-createEmojis(20);
+createEmojis(emojiCount);
 
 /* MOVIMENTO EMOJI */
 function animateEmojis(){
