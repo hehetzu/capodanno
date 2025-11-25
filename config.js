@@ -1,22 +1,11 @@
 // config.js
-// Questo file è la "sorgente unica di verità" per i nomi dei file delle foto.
-// Se un utente ha un nome di file con maiuscole, va aggiunto qui.
+// Questo file è la "sorgente unica di verità" per gestire eccezioni nei nomi dei file.
+// Per far funzionare tutto correttamente, i nomi dei file delle foto devono essere
+// tutti in minuscolo (es. 'giulia.webp', 'matteo.webp', 'luca.webp').
+// In questo modo, la logica di default funziona e questa lista può rimanere vuota.
 
 export const specialFileNames = {
-    'emanuele': 'Emanuele',
-    'giulia': 'Giulia',
-    'cagacazzouniversale': 'Giulia',  
-    'giada': 'Giada',
-    'anna': 'Anna',
-    'annachiara': 'Anna', // Entrambi puntano allo stesso file
-    'dama': 'Dama',
-    'damato': 'Dama',
-    'lorenzo': 'Dama',
-    'luca': 'Luca',
-    'lucapolla': 'Luca',
-    'rocco': 'Rocco',
-    'saba': 'Saba',
-    'sabatino': 'Saba',
-    'matteo': 'Matteo', // Aggiunta regola per forzare la ricerca di 'Matteo.webp'
-    'marta': 'Marta'
+    // Esempio: se il file di 'anna' si chiamasse 'foto_di_anna.webp',
+    // la regola sarebbe: 'anna': 'foto_di_anna'
+    // Al momento, con i file standardizzati in minuscolo, non servono regole speciali.
 };
