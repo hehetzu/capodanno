@@ -11,3 +11,7 @@
 # File generati dal sistema operativo
 .DS_Store
 Thumbs.db
+
+# File di configurazione con chiavi segrete
+# Non caricare mai questo file su repository pubblici.
+/firebaseConfig.js

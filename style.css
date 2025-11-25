@@ -323,9 +323,9 @@ input[type="checkbox"] {
 .user-summary-box img {
     width: 120px; /* Aumentata dimensione */
     height: 120px;
+    object-fit: cover; /* Assicura che l'immagine copra l'area senza distorsioni */
     border-radius: 50%;
     border: 4px solid #f9c74f;
-    object-fit: cover; /* Assicura che l'immagine copra l'area senza distorsioni */
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
 .user-summary-box .user-details {

@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
 import { getDatabase, ref, get, set, push, runTransaction } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 import { nameNormalizationMap, userPhotoMap } from './config.js'; // Importa le liste centralizzate
+import { firebaseConfig } from './firebaseConfig.js'; // Importa la configurazione di Firebase
 
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -122,18 +123,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- FINE SCRIPT FUOCHI D'ARTIFICIO ---
 
     // --- INIZIO CONFIGURAZIONE FIREBASE ---
-    // IMPORTANTE: Sostituisci questo oggetto con la configurazione del tuo progetto Firebase!
-    const firebaseConfig = {
-      apiKey: "AIzaSyBUY-spueXuNmiUew_83Ww3BzP2_kQ0wT0",
-      authDomain: "manu-dbc85.firebaseapp.com",
-      databaseURL: "https://manu-dbc85-default-rtdb.europe-west1.firebasedatabase.app", // IMPORTANTE: Assicurati che questo URL sia corretto!
-      projectId: "manu-dbc85",
-      storageBucket: "manu-dbc85.firebasestorage.app",
-      messagingSenderId: "1081477129666",
-      appId: "1:1081477129666:web:e483d7ab2a26e5ed5ca25b",
-      measurementId: "G-E1MNRMW7M5"
-    };
-
     // Inizializza Firebase
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);

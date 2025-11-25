@@ -1,27 +1,19 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
 import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
-import { specialFileNames } from './config.js'; // Importa la lista centralizzata
+import { userPhotoMap } from './config.js'; // Importa la lista centralizzata
+import { firebaseConfig } from './firebase-config.js'; // Importa la configurazione di Firebase
 
 // --- CONFIG FIREBASE ---
-const firebaseConfig = {
-    apiKey: "AIzaSyBUY-spueXuNmiUew_83Ww3BzP2_kQ0wT0",
-    authDomain: "manu-dbc85.firebaseapp.com",
-    databaseURL: "https://manu-dbc85-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "manu-dbc85",
-    storageBucket: "manu-dbc85.firebasestorage.app",
-    messagingSenderId: "1081477129666",
-    appId: "1:1081477129666:web:e483d7ab2a26e5ed5ca25b",
-    measurementId: "G-E1MNRMW7M5"
-};
+// La configurazione è ora in firebase-config.js per motivi di sicurezza.
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 // --- FOTO UTENTE AUTOMATICA ---
 const getPhotoForUser = (name) => {
-    const lowerCaseName = name.toLowerCase().replace(/\s+/g, '');
+    // La normalizzazione del nome non è più necessaria qui, perché usiamo la mappa
+    // che si basa sul nome "ufficiale" (es. "Emanuele", "Giulia").
 
-    // Usa il nome speciale se esiste, altrimenti usa il nome in minuscolo
-    const fileName = specialFileNames[lowerCaseName] || lowerCaseName;
+    const fileName = userPhotoMap[name] || 'default';
     return {
         webp: `photos/${fileName}.webp`,
         png:  `photos/${fileName}.png`,
