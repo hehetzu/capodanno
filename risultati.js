@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
 import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 import { userPhotoMap } from './config.js'; // Importa la lista centralizzata
-import { firebaseConfig } from './firebase-config.js'; // Importa la configurazione di Firebase
+import { firebaseConfig } from './firebaseConfig.js'; // Importa la configurazione di Firebase
 
 // --- CONFIG FIREBASE ---
 // La configurazione è ora in firebase-config.js per motivi di sicurezza.
