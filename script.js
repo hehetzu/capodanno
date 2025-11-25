@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
 import { getDatabase, ref, get, set, push, runTransaction } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
-import { specialFileNames } from './config.js'; // Importa la lista centralizzata
+import { nameNormalizationMap, userPhotoMap } from './config.js'; // Importa le liste centralizzate
 
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -146,7 +146,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     const allSteps = Array.from(form.querySelectorAll('fieldset'));
     const mainChoiceHolder = document.getElementById('mainChoiceHolder');
     let stepHistory = [allSteps[0]]; // Tiene traccia dei passi visitati
-    const userName = localStorage.getItem('userName') || 'Ospite';
+    
+    // --- Logica per normalizzare il nome utente ---
+    const getNormalizedUserName = () => {
+        const rawName = localStorage.getItem('userName') || 'Ospite';
+        if (rawName === 'Ospite') return 'Ospite';
+
+        const cleanName = rawName.trim().toLowerCase();
+        
+        // 1. Cerca una corrispondenza esatta nella mappa di normalizzazione.
+        if (nameNormalizationMap[cleanName]) {
+            return nameNormalizationMap[cleanName];
+        }
+
+        // 2. Se non trova corrispondenze, controlla se il nome contiene "giul".
+        if (cleanName.includes('giul')) {
+            return 'Giulia';
+        }
+
+        // 3. Se non trova nessuna regola, usa il nome originale.
+        return rawName;
+    };
+
+    const userName = getNormalizedUserName();
 
     // --- Logica per determinare il genere in base al nome ---
     const femaleNames = ['giada', 'giulia', 'marta', 'anna', 'annachiara', 'anna chiara'];
@@ -259,10 +281,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Funzione per ottenere il percorso della foto in base al nome
     const getPhotoForUser = (name) => {
-        const lowerCaseName = name.toLowerCase().replace(/\s+/g, '');
-
-        // Usa il nome speciale se esiste, altrimenti usa il nome in minuscolo
-        const fileName = specialFileNames[lowerCaseName] || lowerCaseName;
+        // Cerca il nome utente nella mappa delle foto. Se non lo trova, usa 'default'.
+        const fileName = userPhotoMap[name] || 'default';
         // Restituisce un oggetto con i percorsi possibili, per coerenza con risultati.js
         return {
             webp: `photos/${fileName}.webp`,
@@ -501,6 +521,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
+    const sendResetNotification = async () => {
+        const backendUrl = 'https://server-menu-capodanno-manu.onrender.com/send-telegram-notification';
+        const resetMessage = `⚠️ *RESET TOTALE ESEGUITO* ⚠️\n\nL'utente *${userName}* ha cancellato tutti i voti e le statistiche.\n\nSi riparte da zero!`;
+
+        try {
+            await fetch(backendUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: resetMessage })
+            });
+        } catch (error) {
+            console.error('Errore durante l\'invio della notifica di reset a Telegram:', error);
+        }
+    };
+
     const resetAllData = async () => {
         if (confirm("Sei assolutamente sicuro di voler cancellare TUTTI i voti, i piatti personalizzati e le statistiche? L'azione è irreversibile.")) {
             try {
@@ -511,6 +546,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 await set(ref(db, 'customDishes'), null);
                 // Cancella tutte le statistiche
                 await set(ref(db, 'stats'), null);
+
+                // Invia la notifica di reset a Telegram
+                await sendResetNotification();
 
                 alert("Dati cancellati con successo! La pagina verrà ricaricata.");
                 window.location.reload();

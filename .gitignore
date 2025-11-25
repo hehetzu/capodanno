@@ -1,14 +1,13 @@
-# File di configurazione con dati sensibili (NON CARICARE MAI!)
+# Dependencies
+# La cartella node_modules viene generata automaticamente con 'npm install'
+# e non va mai inclusa nel repository.
+/node_modules
+
+# Environment variables
+# Il file .env contiene le tue chiavi segrete (API keys) e non deve MAI
+# essere condiviso pubblicamente.
 .env
 
-# Dipendenze di Node.js (vengono reinstallate con 'npm install')
-node_modules/
-
-# File di log generati da npm
-npm-debug.log*
-
-# File di sistema di macOS
+# File generati dal sistema operativo
 .DS_Store
-
-# File di sistema di Windows
 Thumbs.db
