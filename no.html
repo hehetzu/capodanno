@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MENU</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap');
+
+body {
+  margin: 0;
+  height: 100vh;
+  overflow: hidden;
+  background: linear-gradient(135deg, #ef476f, #ffd166);
+  font-family: 'Luckiest Guy', cursive, sans-serif;
+  color: white;
+  position: relative;
+}
+
+/* MANO AL CENTRO */
+#manoGifContainer {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  /* Rimosso lo sfondo e applicato il blend-mode qui per fonderlo con lo sfondo della pagina */
+  background-color: transparent;
+  z-index: 2;
+  /*
+    TRUCCO PER MANTENERE I COLORI:
+    1. Invertiamo i colori del contenitore (il bianco diventa nero, il giallo diventa blu).
+    2. Usiamo 'screen' che rende il nero trasparente.
+    3. Il risultato è che la mano blu si fonde con lo sfondo, ma l'inversione generale
+       ripristina i colori originali, mantenendo il giallo!
+  */
+  filter: invert(1);
+  mix-blend-mode: screen;
+}
+/* Modificato per usare un video, più performante di una GIF */
+#manoVideo {
+  width: 100%;
+  max-width: 220px; /* Leggermente più grande per un effetto migliore */
+  display: block;
+}
+
+/* Ingrandisce la mano solo su schermi grandi (PC) */
+@media (min-width: 768px) {
+  #manoVideo {
+    max-width: 380px; /* Dimensione aumentata per PC */
+  }
+}
+
+/* EMOJI FLOTANTI */
+.emoji {
+  position: absolute;
+  font-size: 2em;
+  transition: transform 1.5s ease-in-out;
+  pointer-events: none;
+}
+
+/* TESTO LAMPEGGIANTE */
+.lampeggia {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  font-size: 3em;
+  font-weight: bold;
+  text-align: center;
+  margin: 0;
+  padding: 10px 0;
+  z-index: 9999;
+  pointer-events: none;
+  animation: lampeggia 2s infinite;
+  color: #0074D9;
+  text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000;
+}
+
+@keyframes lampeggia { 0%,100% {opacity:1;} 50% {opacity:0;} }
+
+/* MESSAGGIO TEMPORANEO */
+#message {
+  position: absolute;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 20px;
+  text-align: center;
+  z-index: 3;
+  opacity: 0;
+  transition: opacity 0.5s;
+  color: white;
+  background: #0074D9;
+  font-weight: bold;
+  border-radius: 0.3em;
+  padding: 0.3em 0.7em;
+}
+
+/* PULSANTE PRANK */
+#prankBtn {
+  display: none;
+  padding: 12px 20px;
+  font-size: 18px;
+  font-family: 'Luckiest Guy', cursive, sans-serif;
+  cursor: pointer;
+  background-color: #ffd166;
+  border: 3px solid #000;
+  border-radius: 8px;
+  color: #000;
+  position: absolute;
+  z-index: 3;
+  transition: transform 0.2s;
+}
+
+#prankBtn:hover { transform: scale(1.1); }
+</style>
+</head>
+<body>
+
+<div id="manoGifContainer">
+  <!-- Sostituito img con video per performance migliori su mobile -->
+  <video id="manoVideo" src="mano-no.mp4" autoplay loop muted playsinline alt="Mano che dice NO"></video>
+</div>
+
+<div id="message"></div>
+<button id="prankBtn">TORNA INDIETRO</button>
+<div class="lampeggia">Non ti vogliamo</div>
+
+<script>
+/* EMOJI LISTA */
+const emojiList = ['🚫','⚠️'];
+
+// Determina il numero di emoji in base al dispositivo
+const isMobile = window.innerWidth < 600;
+const emojiCount = isMobile ? 8 : 40; // Ridotte su mobile per migliorare le performance
+
+/* CREAZIONE EMOJI */
+function createEmojis(count){
+  for(let i=0;i<count;i++){
+    const span = document.createElement('span');
+    span.className='emoji';
+    span.textContent = emojiList[Math.floor(Math.random()*emojiList.length)];
+    span.style.top = Math.random()*85 + "%";
+    span.style.left = Math.random()*85 + "%";
+    document.body.appendChild(span);
+  }
+}
+
+createEmojis(emojiCount);
+
+/* MOVIMENTO EMOJI */
+function animateEmojis(){
+  const emojis = document.querySelectorAll('.emoji');
+  emojis.forEach(el=>{
+    const dx = (Math.random()*2-1)*15;
+    const dy = (Math.random()*2-1)*15;
+    el.style.transform = `translate(${dx}px, ${dy}px) rotate(${Math.random()*20-10}deg)`;
+  });
+}
+setInterval(animateEmojis, 2000); // Rallentato l'intervallo per alleggerire il carico
+
+/* PULSANTE CHE SCAPPA */
+const btn = document.getElementById('prankBtn');
+const message = document.getElementById('message');
+let clickCount=0;
+const messages=['FREGATA!','FREGATA DI NUOVO!','OK, BASTA... FORSE'];
+
+function moveButtonRandomly(){
+  const x = Math.random() * Math.max(0, window.innerWidth - btn.offsetWidth);
+  const y = Math.random() * Math.max(0, window.innerHeight - btn.offsetHeight);
+  btn.style.left = x + 'px';
+  btn.style.top = y + 'px';
+}
+
+function showMessage(text){
+  message.textContent = text;
+  message.style.opacity = 1;
+  setTimeout(()=>{ message.style.opacity = 0; },1000);
+}
+
+// Mostra il pulsante dopo 5s
+setTimeout(()=>{
+  btn.style.display='inline-block';
+  moveButtonRandomly();
+},5000);
+
+btn.addEventListener('click',()=>{
+  if(clickCount < messages.length){
+    showMessage(messages[clickCount]);
+    btn.textContent='DAI, RICLICCA SU !';
+    moveButtonRandomly();
+    clickCount++;
+  } else {
+    window.location.href='menu.html';
+  }
+});
+</script>
+
+</body>
+</html>

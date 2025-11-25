@@ -1,0 +1,17 @@
+# Dependencies
+# La cartella node_modules viene generata automaticamente con 'npm install'
+# e non va mai inclusa nel repository.
+/node_modules
+
+# Environment variables
+# Il file .env contiene le tue chiavi segrete (API keys) e non deve MAI
+# essere condiviso pubblicamente.
+.env
+
+# File generati dal sistema operativo
+.DS_Store
+Thumbs.db
+
+# File di configurazione con chiavi segrete
+# Non caricare mai questo file su repository pubblici.
+/firebaseConfig.js
