@@ -1,19 +1,9 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
 import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 import { nameNormalizationMap, userPhotoMap } from './config.js'; // Importa le mappe corrette
+import { firebaseConfig } from './firebaseConfig.js'; // Importa la configurazione di Firebase
 
-// --- CONFIG FIREBASE ---
-// ATTENZIONE: Inserisci qui le tue vere credenziali Firebase.
-const firebaseConfig = {
-    apiKey: "LA_TUA_API_KEY",
-    authDomain: "IL_TUO_AUTH_DOMAIN",
-    databaseURL: "IL_TUO_DATABASE_URL",
-    projectId: "IL_TUO_PROJECT_ID",
-    storageBucket: "IL_TUO_STORAGE_BUCKET",
-    messagingSenderId: "IL_TUO_SENDER_ID",
-    appId: "LA_TUA_APP_ID",
-    measurementId: "IL_TUO_MEASUREMENT_ID"
-};
+// Inizializza Firebase con la configurazione importata
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 

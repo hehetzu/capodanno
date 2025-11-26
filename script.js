@@ -150,21 +150,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     const mainChoiceHolder = document.getElementById('mainChoiceHolder');
     let stepHistory = [allSteps[0]]; // Tiene traccia dei passi visitati
 
-    // --- INIZIO CONFIGURAZIONE FIREBASE ---
-    // ATTENZIONE: Inserisci qui le tue vere credenziali Firebase.
-    const firebaseConfig = {
-        apiKey: "LA_TUA_API_KEY",
-        authDomain: "IL_TUO_AUTH_DOMAIN",
-        databaseURL: "IL_TUO_DATABASE_URL",
-        projectId: "IL_TUO_PROJECT_ID",
-        storageBucket: "IL_TUO_STORAGE_BUCKET",
-        messagingSenderId: "IL_TUO_SENDER_ID",
-        appId: "LA_TUA_APP_ID",
-        measurementId: "IL_TUO_MEASUREMENT_ID"
-    };
+    // Importa la configurazione da un file esterno per maggiore sicurezza e pulizia
+    // Assicurati che 'firebaseConfig.js' esista e contenga le tue credenziali.
+    const { firebaseConfig } = await import('./firebaseConfig.js');
 
-    // --- INIZIO CONFIGURAZIONE FIREBASE ---
-    // Inizializza Firebase
+    // Inizializza Firebase con la configurazione importata
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     // --- FINE CONFIGURAZIONE FIREBASE ---
