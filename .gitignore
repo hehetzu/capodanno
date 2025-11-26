@@ -1,6 +1,5 @@
 # File di configurazione con dati sensibili (NON CARICARE MAI!)
 .env
-firebaseConfig.js
 
 # Dipendenze di Node.js (vengono reinstallate con 'npm install')
 node_modules/

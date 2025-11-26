@@ -1,16 +1,14 @@
-require('dotenv').config(); // Carica le variabili dal file .env all'inizio dello script
 const express = require('express');
 const fetch = require('node-fetch');
 const cors = require('cors'); // Importa il pacchetto CORS
 
 const app = express();
-const port = process.env.PORT || 3000; // Render userà la sua variabile PORT
+const port = 3000;
 
 // --- CONFIGURAZIONE ---
-// Le credenziali vengono lette dalle variabili d'ambiente.
-// In locale, le prenderà dal file .env. Su Render, le prenderà dalle impostazioni del servizio.
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+// ATTENZIONE: Inserisci qui le tue vere credenziali di Telegram.
+const TELEGRAM_BOT_TOKEN = "IL_TUO_TOKEN_SEGRETO_DAL_BOTFATHER";
+const TELEGRAM_CHAT_ID = "L_ID_DELLA_TUA_CHAT";
 
 // --- MIDDLEWARE ---
 // Abilita CORS per permettere al tuo script (in esecuzione su un'altra origine) di comunicare con questo server.

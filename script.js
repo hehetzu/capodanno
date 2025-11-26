@@ -1,7 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
 import { getDatabase, ref, get, set, push, runTransaction } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 import { nameNormalizationMap, userPhotoMap } from './config.js'; // Importa le liste centralizzate
-import { firebaseConfig } from './firebaseConfig.js'; // Importa la configurazione di Firebase
 
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -150,6 +149,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     const allSteps = Array.from(form.querySelectorAll('fieldset'));
     const mainChoiceHolder = document.getElementById('mainChoiceHolder');
     let stepHistory = [allSteps[0]]; // Tiene traccia dei passi visitati
+
+    // --- INIZIO CONFIGURAZIONE FIREBASE ---
+    // ATTENZIONE: Inserisci qui le tue vere credenziali Firebase.
+    const firebaseConfig = {
+        apiKey: "LA_TUA_API_KEY",
+        authDomain: "IL_TUO_AUTH_DOMAIN",
+        databaseURL: "IL_TUO_DATABASE_URL",
+        projectId: "IL_TUO_PROJECT_ID",
+        storageBucket: "IL_TUO_STORAGE_BUCKET",
+        messagingSenderId: "IL_TUO_SENDER_ID",
+        appId: "LA_TUA_APP_ID",
+        measurementId: "IL_TUO_MEASUREMENT_ID"
+    };
 
     // --- INIZIO CONFIGURAZIONE FIREBASE ---
     // Inizializza Firebase
