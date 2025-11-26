@@ -370,7 +370,7 @@ document.addEventListener('DOMContentLoaded', async () => {
      * @param {object} orderData - L'oggetto contenente i dati dell'ordine.
      */
     const sendTelegramNotification = async (orderData) => {
-        // URL del tuo server personale online (es. su Render).
+        // URL del server personale pubblicato su Render.com
         const backendUrl = 'https://server-menu-capodanno-manu.onrender.com/send-telegram-notification';
 
         // Formatta il messaggio per Telegram
