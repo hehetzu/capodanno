@@ -1,29 +1,29 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
 import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
-import { userPhotoMap } from './config.js'; // Importa la lista centralizzata
+import { nameNormalizationMap, userPhotoMap } from './config.js'; // Importa le mappe corrette
+import { firebaseConfig } from './firebaseConfig.js'; // Importa la configurazione di Firebase
 
-// URL del backend per caricare la configurazione
-const backendUrl = 'https://server-menu-capodanno-manu.onrender.com';
+// --- CONFIG FIREBASE ---
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 
-let db; // Variabile globale per il database
+// --- FUNZIONI UTILITY ---
 
-async function initializeFirebase() {
-    const response = await fetch(`${backendUrl}/firebase-config`);
-    const firebaseConfig = await response.json();
-    const app = initializeApp(firebaseConfig);
-    db = getDatabase(app);
-}
+// Normalizza il nome utente usando la mappa di configurazione
+const getNormalizedUserName = (rawName) => {
+    if (!rawName) return 'Ospite';
+    const cleanName = rawName.trim().toLowerCase();
+    return nameNormalizationMap[cleanName] || rawName;
+};
 
-
-// --- FOTO UTENTE AUTOMATICA ---
+// Ottiene il percorso della foto per un dato nome utente normalizzato
 const getPhotoForUser = (name) => {
-    // La normalizzazione del nome non è più necessaria qui, perché usiamo la mappa
-    // che si basa sul nome "ufficiale" (es. "Emanuele", "Giulia").
-
+    // Cerca il nome utente nella mappa delle foto. Se non lo trova, usa 'default'.
     const fileName = userPhotoMap[name] || 'default';
+    // Restituisce un oggetto con i percorsi possibili
     return {
         webp: `photos/${fileName}.webp`,
-        png:  `photos/${fileName}.png`,
+        png: `photos/${fileName}.png`,
         fallback: `photos/default.webp`
     };
 };
@@ -112,11 +112,14 @@ const showVoterAvatars = async () => {
         const ordersRef = ref(db, 'orders');
         const snapshot = await get(ordersRef);
         const voterNames = new Set();
-        if (snapshot.exists()) Object.values(snapshot.val()).forEach(order => { if(order.userName) voterNames.add(order.userName); });
+        if (snapshot.exists()) {
+            Object.values(snapshot.val()).forEach(order => {
+                if (order.userName) voterNames.add(getNormalizedUserName(order.userName));
+            });
+        }
         
-        // Convertiamo il Set in un Array per poterlo ciclare correttamente
         const votersArray = Array.from(voterNames);
-
+        
         // Cicliamo sull'array di nomi
         for (const name of votersArray) {
             // Ora 'name' è una stringa valida (es. "Emanuele")
@@ -138,8 +141,7 @@ const showVoterAvatars = async () => {
             img.addEventListener('click', () => openLightbox(img.src, name));
             container.appendChild(img);
 
-            // Usiamo decode() per un'animazione di ingresso più fluida
-            img.decode().then(() => {
+            img.onload = () => {
                 requestAnimationFrame(() => {
                     const pos = getRandomPosition(img, contentRect);
                     img.style.position = 'absolute';
@@ -149,7 +151,7 @@ const showVoterAvatars = async () => {
 
                     animateAvatar(img, contentRect);
                 });
-            }).catch(error => console.error(`Errore nel decodificare l'immagine per ${name}:`, error));
+            };
         }
     } catch (error) {
         console.error("Errore caricamento votanti:", error);
@@ -212,15 +214,12 @@ const loadAndDisplayStatsSummary = async () => {
 };
 
 // --- INIZIO ---
-async function main() {
-    try {
-        await initializeFirebase(); // Attendi l'inizializzazione di Firebase
-        loadAndDisplayStatsSummary();
-        showVoterAvatars();
-    } catch (error) {
-        console.error("Errore nell'esecuzione principale di risultati.js:", error);
-    }
+// Eseguiamo il codice direttamente dopo che lo script è stato caricato e tutte le funzioni sono definite.
+// Rimuoviamo l'evento DOMContentLoaded che si attivava troppo presto, prima che Firebase fosse pronto.
+try {
+    loadAndDisplayStatsSummary();
+    showVoterAvatars();
+} catch (error) {
+    console.error("Errore nell'esecuzione principale di risultati.js:", error);
+    // Potresti mostrare un messaggio di errore all'utente qui, se necessario.
 }
-
-// Avvia l'applicazione
-main();

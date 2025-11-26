@@ -177,8 +177,8 @@ fieldset.active {
 
 /* Pulsante di scelta attivo */
 .choice-btn.active-choice,
-/* Stile per i pulsanti-checkbox degli antipasti quando sono selezionati */
-label:has(input[type="checkbox"]:checked) {
+/* Stile per i pulsanti-checkbox (antipasti) quando sono selezionati */
+label.choice-btn:has(input[type="checkbox"]:checked) {
     background: #43aa8b; /* Verde quando selezionato */
     color: #fff;
     transform: translateY(-2px);
@@ -322,9 +322,9 @@ input[type="checkbox"] {
 .user-summary-box img {
     width: 120px; /* Aumentata dimensione */
     height: 120px;
-    object-fit: cover; /* Assicura che l'immagine copra l'area senza distorsioni */
     border-radius: 50%;
     border: 4px solid #f9c74f;
+    object-fit: cover; /* Assicura che l'immagine copra l'area senza distorsioni */
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
 .user-summary-box .user-details {
